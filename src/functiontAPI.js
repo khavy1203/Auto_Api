@@ -7,7 +7,7 @@ const https = require('https');
 const apiGetInfoStudent = async (Name) => {
 
     return new Promise((resolve, reject) => {
-        let yourBearToken = "eyJhbGciOiJIUzUxMiJ9.eyJqdGkiOiI2OGY5ODkyYi1hM2ZjLTRjNzYtYmUwYy00MGJkMDE4NzRhZGIiLCJzdWIiOiI1MjAwMSIsImFjY291bnRUeXBlIjoiUk9MRV9UUkFJTklOR19VTklUUyIsImF1dGgiOiJkYXNoYm9hcmQ6dmlldyxyZXBvcnRfc3R1ZGVudF9wcm9ncmVzczp2aWV3LHJlcG9ydF9zdHVkZW50X3Byb2dyZXNzOmV4cG9ydCxyZXBvcnRfc3R1ZGVudF9zZXNzaW9uOnZpZXcscmVwb3J0X3N0dWRlbnRfc2Vzc2lvbjpleHBvcnQscmVwb3J0X2NvbXBsZXRpb25fc3RhdGlzdGljOnZpZXcscmVwb3J0X2NvbXBsZXRpb25fc3RhdGlzdGljOmV4cG9ydCxkYXRhX3ZlaGljbGU6dmlldyxkYXRhX3ZlaGljbGU6ZXhwb3J0LGRhdGFfY291cnNlOnZpZXcsZGF0YV9jb3Vyc2U6ZXhwb3J0LGRhdGFfc3R1ZGVudDp2aWV3LGRhdGFfc3R1ZGVudDpleHBvcnQsZGF0YV90dXRvcjp2aWV3LGRhdGFfdHV0b3I6ZXhwb3J0LHN5c3RlbV9ub3RpZmljYXRpb25zOnZpZXcsc2Vzc2lvbl9tYW5hZ2VtZW50OnZpZXcsc2Vzc2lvbl9tYW5hZ2VtZW50OmV4cG9ydCIsImV4cCI6MTY4NDU5MTc1OH0.L1RwEPmblNuqfz-HaoJjMMMGFXSkpIZjbVbE54NzTIlOCeHdbeq1yGqBLumo0_JSFNMibSnMsE__C0MMrlBPGg"
+        let yourBearToken = process.env.tokenNLTB;
 
         const payload = {
             administrativeUnitId: 35,
