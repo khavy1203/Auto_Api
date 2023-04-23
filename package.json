@@ -1,0 +1,26 @@
+{
+  "name": "auto",
+  "version": "1.0.0",
+  "description": "automation API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error:no test specified\" && exit 1",
+    "start": "babel-node src/server.js",
+    "dev": "npm start"
+  },
+  "author": "khavydev",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "file-save": "^0.2.0",
+    "file-saver": "^2.0.5",
+    "node-fetch": "^3.3.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.21.0",
+    "@babel/core": "^7.21.4",
+    "@babel/node": "^7.20.7",
+    "@babel/preset-env": "^7.21.4"
+  }
+}
