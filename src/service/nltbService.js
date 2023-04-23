@@ -3,6 +3,36 @@ const { saveAs } = require('file-saver');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+require("dotenv").config();
+
+
+const apiTest = async (id) => {
+    try {
+        const user = await db.apiTest.findOne({ where: { id: id } });
+
+        if (user) {
+            await user.destroy();
+            return {
+                EM: " apiTest successfully",
+                EC: "0",
+                DT: [],
+            };
+        } else {
+            return {
+                EM: "No user find",
+                EC: "1",
+                DT: [],
+            };
+        }
+    } catch (e) {
+        console.log("error from service apiTest : >>>", e);
+        return {
+            EM: "Something wrong ...",
+            EC: "-2",
+            DT: "",
+        };
+    }
+};
 
 const apiGetInfoStudent = async (Name) => {
 
@@ -84,9 +114,9 @@ const apiGetInfoStudent = async (Name) => {
                 let dataBuffer = Buffer.concat(dataArr);
                 let data = JSON.parse(dataBuffer.toString());
 
-                data.forEach(obj =>{
-                    for(let key in obj){
-                        if(obj[key] == null || obj[key] == 0 )delete obj[key];
+                data.forEach(obj => {
+                    for (let key in obj) {
+                        if (obj[key] == null || obj[key] == 0) delete obj[key];
                     }
                 })
                 const workbook = XLSX.utils.book_new();
@@ -97,13 +127,21 @@ const apiGetInfoStudent = async (Name) => {
                 XLSX.writeFile(workbook, `ThongTinHocVien.xlsx`);
                 saveAs('ThongTinHocVien.xlsx');
 
-                resolve(data);
+                resolve({
+                    EM: "Get data successfully",
+                    EC: 0,
+                    DT: data,
+                });
             });
 
         });
 
         req.on('error', (error) => {
-            reject(error);
+            reject({
+                EM: "Something wrong ...",
+                EC: -2,
+                DT: "",
+            });
         });
 
         req.write(JSON.stringify(payload));
