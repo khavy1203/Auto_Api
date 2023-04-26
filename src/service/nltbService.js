@@ -102,7 +102,7 @@ const apiGetInfoStudent = async (Name) => {
         };
 
         const req = https.request(options, (res) => {
-            console.log(`statusCode: ${res.statusCode}`);
+            // console.log(`statusCode: ${res.statusCode}`);
 
             res.on('data', (d) => {
                 //   let data = process.stdout.write(d);
@@ -137,6 +137,7 @@ const apiGetInfoStudent = async (Name) => {
         });
 
         req.on('error', (error) => {
+            console.log("check error: " + error)
             reject({
                 EM: "Something wrong ...",
                 EC: -2,
@@ -149,6 +150,12 @@ const apiGetInfoStudent = async (Name) => {
     });
 }
 
+const fetchAPIonFile = async (file) => {
+
+}
+// 
+
 module.exports = {
-    apiGetInfoStudent
+    apiGetInfoStudent,
+    fetchAPIonFile
 }
