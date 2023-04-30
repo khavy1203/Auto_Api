@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 const fileUpload = require('express-fileupload');
 import configViewEngine from "./config/viewEngine";
 import apiRoutes from "./routes/api";
+require('dotenv').config();
 
 const app = express();
 
@@ -13,7 +14,6 @@ app.use(fileUpload());
 
 configViewEngine(app);
 apiRoutes(app);
-
 // const zaloOA = new ZaloOA({
 //   oaid: '580996410463386537',
 //   secretkey: 'GFjcfsgiXPj2IuNRmdxD',
