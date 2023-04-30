@@ -34,10 +34,10 @@ const apiTest = async (id) => {
     }
 };
 
-const apiGetInfoStudent = async (Name) => {
+const apiGetInfoStudent = async (token= null, Name) => {
 
     return new Promise((resolve, reject) => {
-        let yourBearToken = process.env.tokenNLTB;
+        let yourBearToken = token || process.env.tokenNLTB;
 
         const payload = {
             administrativeUnitId: 35,
@@ -54,38 +54,9 @@ const apiGetInfoStudent = async (Name) => {
             toDate: null,
             searchString: Name
         }
-
-        // const options = {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': 'Bearer ' + yourBearToken
-        //     },
-        //     body: JSON.stringify(payload),
-        //     agent: new https.Agent({ rejectUnauthorized: false })
-        // };
-
         const params = new URLSearchParams();
         params.append('page', 0);
         params.append('size', 10);
-
-        // fetch('https://dat.gplx.gov.vn/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(), options)
-        //     .then((res) => console.log('check', res.json()))
-        //     .then((data) => {
-        //         console.log('check data', data)
-
-        //         const workbook = XLSX.utils.book_new();
-
-        //         // Chuyển đổi dữ liệu thành định dạng Excel
-        //         const worksheet = XLSX.utils.json_to_sheet(data.Data);
-
-        //         // Thêm worksheet vào workbook
-        //         XLSX.utils.book_append_sheet(workbook, worksheet, 'ThongTinHocVien');
-        //         console.log('check workbook', workbook)
-        //         XLSX.writeFile(workbook, `ThongTinHocVien.xlsx`);
-        //     })
-        //     .catch(error => console.log('Error:', error));
-
 
         //1 nốt bay màu SSL =))
         let dataArr = [];
@@ -113,12 +84,13 @@ const apiGetInfoStudent = async (Name) => {
 
                 let dataBuffer = Buffer.concat(dataArr);
                 let data = JSON.parse(dataBuffer.toString());
-
+                console.log('check data: ' + data);
                 data.forEach(obj => {
                     for (let key in obj) {
                         if (obj[key] == null || obj[key] == 0) delete obj[key];
                     }
                 })
+                console.log('check data: ' + data)
                 const workbook = XLSX.utils.book_new();
                 // Chuyển đổi dữ liệu thành định dạng Excel
                 const worksheet = XLSX.utils.json_to_sheet(data);
@@ -153,7 +125,6 @@ const apiGetInfoStudent = async (Name) => {
 const fetchAPIonFile = async (file) => {
 
 }
-// 
 
 module.exports = {
     apiGetInfoStudent,

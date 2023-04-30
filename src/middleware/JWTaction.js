@@ -1,5 +1,6 @@
 require("dotenv").config();
 import jwt from "jsonwebtoken";
+import nltbController from "../controller/nltbController";
 
 import { getGroupWithRole } from "../service/JWTService";
 
@@ -136,6 +137,9 @@ const checkUserPermission = async (req, res, next) => {
     });
   }
 };
+
+
+
 
 module.exports = {
   createJWT,
