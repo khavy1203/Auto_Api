@@ -4,6 +4,7 @@ const fileUpload = require('express-fileupload');
 import configViewEngine from "./config/viewEngine";
 import apiRoutes from "./routes/api";
 require('dotenv').config();
+const ZaloOA = require('zalo-sdk').ZaloOA;
 
 const app = express();
 
@@ -14,47 +15,57 @@ app.use(fileUpload());
 
 configViewEngine(app);
 apiRoutes(app);
-// const zaloOA = new ZaloOA({
-//   oaid: '580996410463386537',
-//   secretkey: 'GFjcfsgiXPj2IuNRmdxD',
-//   callbackurl: '<your_callback_url>',
-// });
 
-const app_id = 'your_app_id';
-const app_secret = 'your_app_secret';
+const { Telegraf } = require('telegraf');
+const { message } = require('telegraf/filters');
 
-// const data = {
-//   app_id: app_id,
-//   app_secret: app_secret
-// };
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// app.post('/webhook', (req, res) => {
-//   const data = req.body;
-//   const sender_id = data.sender.id;
-//   const message = data.message.text;
 
-//   axios.post('https://openapi.zalo.me/v2.0/oa/message', qs.stringify({
-//     recipient: {
-//       user_id: sender_id
-//     },
-//     message: {
-//       text: `Bạn đã gửi tin nhắn: ${message}`
-//     }
-//   }), {
-//     headers: {
-//       'Authorization': `Bearer ${access_token}`,
-//       'Content-Type': 'application/x-www-form-urlencoded'
-//     }
-//   })
-//     .then(response => {
-//       console.log(response.data);
-//       res.sendStatus(200);
-//     })
-//     .catch(error => {
-//       console.log(error.response.data);
-//       res.sendStatus(500);
-//     });
-// });
+bot.use((ctx,next) => {
+  // ctx.reply('U use bot');
+  next(ctx);
+})
+
+const helpMessage = `
+Các cú pháp sử dụng bot:
+/DAT tenhocvien (Kiểm tra DAT học viên)
+`
+bot.start((ctx) =>{ 
+  ctx.reply('Chào mừng bạn đến với bot chat, hãy gõ /help để xem các lệnh')
+  console.log("from",ctx.from);
+  console.log("chat", ctx.chat);
+  console.log("message", ctx.message);
+});
+
+bot.help((ctx) => ctx.reply(helpMessage));
+// bot.on(message('sticker'), (ctx) => ctx.reply('👍'));
+bot.settings((ctx) => ctx.reply('You have entered the settings menu'));
+bot.command('secret', Telegraf.reply('Secret detected'))
+bot.command('DAT', (ctx)=>{
+  console.log("DAT detected", ctx);
+
+  bot.telegram.sendMessage(ctx.chat.id, 'Hello wwwww', {
+    parse_mode: 'Markdown',
+    disable_notification: true,
+  });
+
+})
+bot.hears('hi', (ctx) => ctx.reply('Hey there'));
+bot.on("text", (ctx) => {
+    console.log("text", ctx.message);
+    
+  })
+  bot.on("sticker", (ctx) => {
+      console.log("text", ctx.message);
+      ctx.reply('this is sticker');
+})
+
+bot.launch();
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

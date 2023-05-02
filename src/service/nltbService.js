@@ -65,7 +65,7 @@ const apiGetInfoStudent = async (token = null, Name) => {
         //1 nốt bay màu SSL =))
         let dataArr = [];
         const options = {
-            hostname: '117.1.28.135',
+            hostname: process.env.hostnameNLTB,
             port: 443,
             path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
             method: 'POST',
@@ -133,8 +133,8 @@ const fetchAPIonFile = async (file) => {
 const getTokenService = async () => {
     return new Promise((resolve, reject) => {
         const payload = {
-            username: '52001',
-            password: 'hRmqcv5&',
+            username: process.env.usernameNLTB,
+            password: process.env.passwordNLTB,
             rememberMe: true,
             responseCaptcha: 'hTaTorNY145de0BdEfdhuA==',
             userCaptcha: '',
@@ -143,7 +143,7 @@ const getTokenService = async () => {
         let dataArr = [];
 
         const options = {
-            hostname: '117.1.28.135',
+            hostname: process.env.hostnameNLTB,
             port: 443,
             path: '/api/authenticate',
             method: 'POST',
@@ -196,7 +196,7 @@ const checkTokenService = async (req,res) => {
         let dataArr = [];
 
         const options = {
-            hostname: '117.1.28.135',
+            hostname: process.env.hostnameNLTB,
             port: 443,
             path: '/api/centers/getListCenterByUser',
             method: 'GET',
@@ -269,7 +269,7 @@ const apiGetInfoStudentOnSource = async (maKH, page) => {
         let dataArr = [];
   
         const options = {
-          hostname: '117.1.28.135',
+          hostname: process.env.hostnameNLTB,
           port: 443,
           path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
           method: 'POST',
