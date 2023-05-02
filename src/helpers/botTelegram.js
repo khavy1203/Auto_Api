@@ -52,11 +52,12 @@ const botTelegram = () => {
       const res = await botTelegramService.getInfoStudent(tokenNLTB, name);
       Promise.all([res]);
       console.log('check data', res);
-      let i = 0;
+      let i = 1;
       if (res.EC == 0 && res.DT.length > 0) {
         for (const e of res.DT) {
           const row = `
           <pre>
+            <i>STT:</i>${i++}
             <i>Họ và Tên:</i>${e?.studentName}
             <i>Mã học viên:</i>${e?.studentId}
             <i>Ngày sinh:</i>${e?.studentDateOfBirth}
@@ -72,11 +73,13 @@ const botTelegram = () => {
         `;
           const pr1 = await ctx.replyWithHTML(row);
           const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
-          console.log('check i++', i++);
+          console.log('check i++', i);
           await Promise.all([pr1, pr2]);
         };
         isFetchingData = true;
-
+      }else{
+        await ctx.reply("Dữ liệu trống !!!");
+        isFetchingData = true;
       }
     }
 
