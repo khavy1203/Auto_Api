@@ -10,7 +10,7 @@ const botTelegram = () => {
 
   const helpMessage = `
     Các cú pháp sử dụng bot:
-    /DAT tenhocvien or CMND or CCCD(Kiểm tra DAT học viên)
+    /DAT tenhocvien or CMND or CCCD (Kiểm tra DAT học viên)
     `;
 
   const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -47,6 +47,11 @@ const botTelegram = () => {
       input.shift();
       const name = input.join(" ");
       console.log("name", name);
+      if (!name) {
+        await ctx.reply(helpMessage);
+        isFetchingData = true;
+        return;
+      }
       //call api get student info
       let tokenNLTB = ctx?.state?.tokenNLTB;
       const res = await botTelegramService.getInfoStudent(tokenNLTB, name);
@@ -56,20 +61,18 @@ const botTelegram = () => {
       if (res.EC == 0 && res.DT.length > 0) {
         for (const e of res.DT) {
           const row = `
-          <pre>
-            <i>STT:</i>${i++}
-            <i>Họ và Tên:</i>${e?.studentName}
-            <i>Mã học viên:</i>${e?.studentId}
-            <i>Ngày sinh:</i>${e?.studentDateOfBirth}
-            <i>Hạng đào tạo:</i>${e?.driverLicenseLevelName}
-            <i>Mã khoá học:</i>${e?.courseId}
-            <i>Thời gian đào tạo:</i>${e?.totalTime}
-            <i>Quãng đường đào tạo:</i>${e?.totalDistance}
-            <i>Thời gian thiếu:</i>${e?.moreTime}
-            <i>Quãng đường thiếu:</i>${e?.moreDistance}
-            <i>Ghi chú:</i>${e?.qualifiedNote}
-            <i>Yêu cầu:</i>${e?.moreTime}
-          </pre>
+            <i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>
+            <i>Họ và Tên:</i><code style="color: red;"> <b style="color:red;">${e?.studentName}</b></code>
+            <i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${e?.studentId}</b></code>
+            <i>Ngày sinh:</i><code style="color: red;"> <b style="color:red;">${e?.studentDateOfBirth}</b></code> 
+            <i>Hạng đào tạo:</i><code style="color: red;"> <b style="color:red;">${e?.driverLicenseLevelName}</b></code> 
+            <i>Mã khoá học:</i><code style="color: red;"> <b style="color:red;">${e?.courseId}</b></code> 
+            <i>Thời gian đào tạo:</i><code style="color: red;"> <b style="color:red;">${e?.totalTime ? e?.totalTime +" giờ" :"Dữ liệu trống"}</b></code> 
+            <i>Quãng đường đào tạo:</i> <code style="color: red;"> <b style="color:red;">${e?.totalDistance ? e?.totalDistance +" Km" :"Dữ liệu trống"}</b></code> 
+            <i>Thời gian thiếu:</i> <code style="color: red;"> <b style="color:red;">${e?.moreTime ? e?.moreTime +" giờ" : "Dữ liệu trống"}</b></code> 
+            <i>Quãng đường thiếu:</i> <code style="color: red;"> <b style="color:red;">${e?.moreDistance ? e?.moreDistance +" Km" : "Dữ liệu trống"}</b></code> 
+            <i>Ghi chú:</i> <code style="color: red;"> <b style="color:red;">${e?.note || "Dữ liệu trống"}</b></code> 
+            <i>Yêu cầu:</i> <code style="color: red;"> <b style="color:red;">${e?.qualifiedNote || "Dữ liệu trống"}</b></code> 
         `;
           const pr1 = await ctx.replyWithHTML(row);
           const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
@@ -77,12 +80,14 @@ const botTelegram = () => {
           await Promise.all([pr1, pr2]);
         };
         isFetchingData = true;
+        return;
       }else{
         await ctx.reply("Dữ liệu trống !!!");
         isFetchingData = true;
+        return;
       }
     }
-
+    return;
   })
 
   bot.hears('hi', (ctx) => ctx.reply('Hey there'));
