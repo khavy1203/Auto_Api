@@ -60,20 +60,18 @@ const botTelegram = () => {
       let i = 1;
       if (res.EC == 0 && res.DT.length > 0) {
         for (const e of res.DT) {
-          const row = `
-            <i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>
-            <i>Họ và Tên:</i><code style="color: red;"> <b style="color:red;">${e?.studentName}</b></code>
-            <i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${e?.studentId}</b></code>
-            <i>Ngày sinh:</i><code style="color: red;"> <b style="color:red;">${e?.studentDateOfBirth}</b></code> 
-            <i>Hạng đào tạo:</i><code style="color: red;"> <b style="color:red;">${e?.driverLicenseLevelName}</b></code> 
-            <i>Mã khoá học:</i><code style="color: red;"> <b style="color:red;">${e?.courseId}</b></code> 
-            <i>Thời gian đào tạo:</i><code style="color: red;"> <b style="color:red;">${e?.totalTime ? e?.totalTime +" giờ" :"Dữ liệu trống"}</b></code> 
-            <i>Quãng đường đào tạo:</i> <code style="color: red;"> <b style="color:red;">${e?.totalDistance ? e?.totalDistance +" Km" :"Dữ liệu trống"}</b></code> 
-            <i>Thời gian thiếu:</i> <code style="color: red;"> <b style="color:red;">${e?.moreTime ? e?.moreTime +" giờ" : "Dữ liệu trống"}</b></code> 
-            <i>Quãng đường thiếu:</i> <code style="color: red;"> <b style="color:red;">${e?.moreDistance ? e?.moreDistance +" Km" : "Dữ liệu trống"}</b></code> 
-            <i>Ghi chú:</i> <code style="color: red;"> <b style="color:red;">${e?.note || "Dữ liệu trống"}</b></code> 
-            <i>Yêu cầu:</i> <code style="color: red;"> <b style="color:red;">${e?.qualifiedNote || "Dữ liệu trống"}</b></code> 
-        `;
+          const row = `<i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>
+            <i>Họ và Tên:</i> <b>${e?.studentName}</b>
+            <i>Mã học viên:</i> <b>${e?.studentId}</b>
+            <i>Ngày sinh:</i> <b>${e?.studentDateOfBirth}</b> 
+            <i>Hạng đào tạo:</i> <b>${e?.driverLicenseLevelName}</b> 
+            <i>Mã khoá học:</i> <b>${e?.courseId}</b> 
+            <i>Thời gian đào tạo:</i> <b>${e?.totalTime ? e?.totalTime +" giờ" :""}</b> 
+            <i>Quãng đường đào tạo:</i>  <b>${e?.totalDistance ? e?.totalDistance +" Km" :""}</b> 
+            <i>Thời gian thiếu:</i>  <b>${e?.moreTime ? e?.moreTime +" giờ" : ""}</b> 
+            <i>Quãng đường thiếu:</i>  <b>${e?.moreDistance ? e?.moreDistance +" Km" : ""}</b> 
+            <i>Ghi chú:</i>  <b>${e?.note || ""}</b> 
+            <i>Yêu cầu:</i>  <b>${e?.qualifiedNote || ""}</b>`;
           const pr1 = await ctx.replyWithHTML(row);
           const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
           console.log('check i++', i);
