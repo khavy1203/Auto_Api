@@ -10,7 +10,8 @@ const botTelegram = () => {
 
   const helpMessage = `
     Các cú pháp sử dụng bot:
-    /DAT tenhocvien hoặc mãhọcviên (Kiểm tra DAT học viên)
+    - /DAT tenhocvien hoặc mãhọcviên (Kiểm tra DAT học viên)
+    - /PHIEN tenhocvien hoặc mãhọcviên (Kiểm tra Phiên học viên)
     `;
 
   const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -39,6 +40,15 @@ const botTelegram = () => {
 
   let isFetchingData = true;
 
+  bot.command('help', async (ctx) => {
+    if (isFetchingData) {
+        isFetchingData = false;
+        await ctx.reply(helpMessage);
+        isFetchingData = true;
+        return;
+    }
+    return;
+  })
 
   bot.command('DAT', async (ctx) => {
     if (isFetchingData) {
