@@ -302,10 +302,25 @@ const getToken = async (req, res) => {
   try {
     const data = await nltbService.getTokenService();
     if (data?.DT?.id_token != null) {
-      fs.writeFileSync('.env', `tokenNLTB=${data?.DT?.id_token}`);
       dotenv.config();
+      const envConfig = dotenv.parse(fs.readFileSync('.env'));
+      console.log("check envConfig", envConfig),
+
+        // Thay đổi giá trị của biến API_SECRET
+      process.env.tokenNLTB = `${data?.DT?.id_token}`;
+      envConfig.tokenNLTB = `${data?.DT?.id_token}`;
+
+      const envContent = Object.entries(envConfig).map(([key, value]) => `${key}=${value}`).join('\n');
+      // Ghi lại nội dung của biến môi trường vào file .env
+      console.log("check envContent", envContent)
+      fs.writeFileSync('.env', envContent);
+
+      // Lưu lại và đóng file
+      dotenv.config();
+
+      console.log("check biến môi trường mới", process.env.tokenNLTB)
     }
-    return ({
+    return res.status(200).json({
       EM: data.EM,
       EC: data.EC,
       DT: data.DT,

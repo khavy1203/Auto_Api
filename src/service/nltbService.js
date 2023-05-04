@@ -157,9 +157,9 @@ const getTokenService = async () => {
         const req = https.request(options, (res) => {
             console.log(`statusCode: ${res.statusCode}`);
             if(res.statusCode != 200){
-                reject({
-                    EM: "Something wrong ...",
-                    EC: -2,
+                resolve({
+                    EM: "error server from api ...",
+                    EC: -1,
                     DT: [],
                 });
             };

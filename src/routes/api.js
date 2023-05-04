@@ -11,8 +11,8 @@ const apiRoutes = (app) => {
 
   routes.post("/nltb/queryDataOnMHV", nltbController.fetchAPIonMhv);
   routes.post("/nltb/queryDataOnMKH", nltbController.fetchAPIonMaKH);
-  // routes.get("/nltb/getToken", nltbController.getToken);
-  // routes.get("/nltb/checkToken", nltbController.checkToken);
+  routes.get("/nltb/getToken", nltbController.getToken);
+  routes.get("/nltb/checkToken", nltbController.checkToken);
 
   return app.use("/api/v1/", routes);
 }
