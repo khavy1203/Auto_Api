@@ -46,7 +46,13 @@ const getInfoStudent = async (token = null, name) => {
 
         const req = https.request(options, (res) => {
             // console.log(`statusCode: ${res.statusCode}`);
-
+            if(res.statusCode != 200){
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: [],
+                });
+            }
             res.on('data', (d) => {
                 //   let data = process.stdout.write(d);
                 dataArr.push(d);
@@ -54,14 +60,17 @@ const getInfoStudent = async (token = null, name) => {
 
             res.on('end', () => {
 
-                let dataBuffer = Buffer.concat(dataArr);
-                let data = JSON.parse(dataBuffer.toString());
-                console.log('check data: ' + data);
-                data.forEach(obj => {
-                    for (let key in obj) {
-                        if (obj[key] == null || obj[key] == 0) delete obj[key];
-                    }
-                })
+                let data = [];
+                if(dataArr.length>0){
+                    let dataBuffer = Buffer.concat(dataArr);
+                    data = JSON.parse(dataBuffer.toString());
+                    console.log('check data: ' + data);
+                    data.forEach(obj => {
+                        for (let key in obj) {
+                            if (obj[key] == null || obj[key] == 0) delete obj[key];
+                        }
+                    })
+                }
                 resolve({
                     EM: "Get data successfully",
                     EC: 0,
@@ -136,7 +145,13 @@ const getSessionStudent = async (token = null, name) => {
 
         const req = https.request(options, (res) => {
             // console.log(`statusCode: ${res.statusCode}`);
-
+            if(res.statusCode != 200){
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: [],
+                });
+            }
             res.on('data', (d) => {
                 //   let data = process.stdout.write(d);
                 dataArr.push(d);
@@ -144,14 +159,17 @@ const getSessionStudent = async (token = null, name) => {
 
             res.on('end', () => {
 
-                let dataBuffer = Buffer.concat(dataArr);
-                let data = JSON.parse(dataBuffer.toString());
-                console.log('check data Phien: ' + data);
-                // data.forEach(obj => {
-                //     for (let key in obj) {
-                //         if (obj[key] == null || obj[key] == 0) delete obj[key];
-                //     }
-                // })
+                let data = [];
+                if(dataArr.length>0){
+                    let dataBuffer = Buffer.concat(dataArr);
+                    data = JSON.parse(dataBuffer.toString());
+                    console.log('check data Phiên: ' + data);
+                    data.forEach(obj => {
+                        for (let key in obj) {
+                            if (obj[key] == null || obj[key] == 0) delete obj[key];
+                        }
+                    })
+                }
                 resolve({
                     EM: "Get data successfully",
                     EC: 0,

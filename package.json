@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error:no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/server.js",
-    "dev": "npm start"
+    "start": "pm2 start src/server.js --name auto --ignore-watch=\"node_modules .env\" --max-restarts 3 --time",
+    "dev": "nodemon --exec babel-node src/server.js",
+    "stop": "pm2 stop auto",
+    "restart": "pm2 restart auto"
   },
   "author": "khavydev",
   "license": "ISC",
@@ -24,6 +26,7 @@
     "markdown-table": "^3.0.3",
     "node-fetch": "^3.3.1",
     "nodemon": "^2.0.22",
+    "pm2": "^5.3.0",
     "telegraf": "^4.12.2",
     "xlsx": "^0.18.5",
     "zalo-sdk": "^2.0.3"

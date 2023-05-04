@@ -156,14 +156,23 @@ const getTokenService = async () => {
 
         const req = https.request(options, (res) => {
             console.log(`statusCode: ${res.statusCode}`);
-
+            if(res.statusCode != 200){
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: [],
+                });
+            };
             res.on('data', (d) => {
                 dataArr.push(d);
             });
 
             res.on('end', () => {
-                let dataBuffer = Buffer.concat(dataArr);
-                let data = JSON.parse(dataBuffer.toString());
+                let data = [];
+                if(dataArr.length > 0){
+                    let dataBuffer = Buffer.concat(dataArr);
+                    data = JSON.parse(dataBuffer.toString());
+                }
 
                 console.log("check data", data)
                 resolve({

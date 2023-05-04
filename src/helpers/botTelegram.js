@@ -20,7 +20,7 @@ const botTelegram = () => {
     try {
       const res1 = await checkToken();
       console.log("check res 1", res1);
-      if (res1?.DT?.status == 401) {
+      if (res1?.DT?.status != 200) {
         const data = await getToken();
         // get token from api next call api
         console.log('check data in getToken', data)

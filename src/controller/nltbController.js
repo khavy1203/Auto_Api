@@ -68,7 +68,11 @@ const apiGetInfoStudent = async (mhv) => {
 
       const req = https.request(options, (res) => {
         console.log(`statusCode: ${res.statusCode}`);
-
+        if(res.statusCode != 200) reject({
+          EM: "Something wrong ...",
+          EC: -2,
+          DT: [],
+        });
         res.on('data', (d) => {
           //   let data = process.stdout.write(d);
           dataArr.push(d);
