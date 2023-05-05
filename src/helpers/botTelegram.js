@@ -34,7 +34,7 @@ const botTelegram = () => {
         }
         const data = await getTokenTelegram();
         console.log('check data in getToken', data)
-        if ( +data.EC != 0 || !data?.DT?.id_token) {
+        if (+data.EC != 0 || !data?.DT?.id_token) {
           await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
           return;
         } else {
@@ -78,6 +78,10 @@ const botTelegram = () => {
       const res = await botTelegramService.getInfoStudent(tokenNLTB, name);
       Promise.all([res]);
       console.log('check data', res);
+      if (+res?.EC != 0) {
+        await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        return;
+      }
       let i = 1;
       if (res.EC == 0 && res.DT.length > 0) {
         for (const e of res.DT) {
@@ -117,6 +121,10 @@ const botTelegram = () => {
       Promise.all([res]);
       console.log('check data', res);
       let i = 1;
+      if (+res?.EC != 0) {
+        await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        return;
+      }
       if (res.EC == 0 && res.DT.length > 0) {
         for (const e of res.DT) {
           const row = `<i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Ngày sinh:</i> <b>${e?.studentDateOfBirth}</b> \n<i>Hạng đào tạo:</i> <b>${e?.driverLicenseLevelName}</b> \n<i>Mã khoá học:</i> <b>${e?.courseId}</b> \n<i>Thời gian đào tạo:</i> <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b> \n<i>Quãng đường đào tạo:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b> \n<i>Thời gian thiếu:</i>  <b>${e?.moreTime ? e?.moreTime + " giờ" : ""}</b> \n<i>Quãng đường thiếu:</i>  <b>${e?.moreDistance ? e?.moreDistance + " Km" : ""}</b> \n<i>Ghi chú:</i>  <b>${e?.note || ""}</b>`;
@@ -155,6 +163,10 @@ const botTelegram = () => {
       Promise.all([res]);
       console.log('check data PHIEN', res);
       let i = 1;
+      if (+res?.EC != 0) {
+        await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        return;
+      }
       if (res.EC == 0 && res.DT.length > 0) {
         for (const e of res.DT) {
           const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${e?.startTime ? e?.startTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian kết thúc:</i>  <b>${e?.endTime ? e?.endTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
@@ -182,6 +194,10 @@ const botTelegram = () => {
       input.shift();
       const name = input.join(" ");
       console.log("name", name);
+      if (+res?.EC != 0) {
+        await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        return;
+      }
       if (!name) {
         await ctx.reply(helpMessage);
         isFetchingData = true;

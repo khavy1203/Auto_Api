@@ -31,185 +31,219 @@ const apiTest = async (id) => {
 };
 
 const getInfoStudent = async (token = null, name) => {
+    try {
+        return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+            const yourBearToken = token ? token : process.env.tokenNLTB;
 
-        const yourBearToken = token ? token : process.env.tokenNLTB;
+            const payload = {
+                administrativeUnitId: 35,
+                centerId: null,
+                centerIdParam: null,
+                driverLicenseLevelName: null,
+                eventReloadName: null,
+                fromDate: null,
+                practiceResultId: null,
+                providerId: null,
+                qualifiedYn: null,
+                timeFrom: null,
+                timeTo: null,
+                toDate: null,
+                searchString: name
+            }
+            const params = new URLSearchParams();
+            params.append('page', 0);
+            params.append('size', 10);
 
-        const payload = {
-            administrativeUnitId: 35,
-            centerId: null,
-            centerIdParam: null,
-            driverLicenseLevelName: null,
-            eventReloadName: null,
-            fromDate: null,
-            practiceResultId: null,
-            providerId: null,
-            qualifiedYn: null,
-            timeFrom: null,
-            timeTo: null,
-            toDate: null,
-            searchString: name
-        }
-        const params = new URLSearchParams();
-        params.append('page', 0);
-        params.append('size', 10);
+            //1 nốt bay màu SSL =))
+            let dataArr = [];
+            const options = {
+                hostname: process.env.hostnameNLTB,
+                port: 443,
+                path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + yourBearToken
+                },
+                rejectUnauthorized: false // Set rejectUnauthorized to false
+            };
 
-        //1 nốt bay màu SSL =))
-        let dataArr = [];
-        const options = {
-            hostname: process.env.hostnameNLTB,
-            port: 443,
-            path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + yourBearToken
-            },
-            rejectUnauthorized: false // Set rejectUnauthorized to false
-        };
+            const req = https.request(options, (res) => {
+                // console.log(`statusCode: ${res.statusCode}`);
+                const contentType = res.headers['content-type'];
+                if (!/^application\/json/.test(contentType)) {
+                    console.log(`Invalid content type. Expected application/json but received ${contentType}`);
+                    reject({
+                        EM: "Invalid content type",
+                        EC: -3,
+                        DT: [],
+                    });
+                }
 
-        const req = https.request(options, (res) => {
-            // console.log(`statusCode: ${res.statusCode}`);
-            
+                res.on('data', (d) => {
+                    //   let data = process.stdout.write(d);
+                    dataArr.push(d);
+                });
 
-            res.on('data', (d) => {
-                //   let data = process.stdout.write(d);
-                dataArr.push(d);
+                res.on('end', () => {
+
+                    let data = [];
+                    if (dataArr.length > 0) {
+                        let dataBuffer = Buffer.concat(dataArr);
+                        data = JSON.parse(dataBuffer.toString());
+                        console.log('check data: ' + data);
+                        data.forEach(obj => {
+                            for (let key in obj) {
+                                if (obj[key] == null || obj[key] == 0) delete obj[key];
+                            }
+                        })
+                    }
+                    resolve({
+                        EM: "Get data successfully",
+                        EC: 0,
+                        DT: data,
+                    });
+                });
+
             });
 
-            res.on('end', () => {
-
-                let data = [];
-                if(dataArr.length>0){
-                    let dataBuffer = Buffer.concat(dataArr);
-                    data = JSON.parse(dataBuffer.toString());
-                    console.log('check data: ' + data);
-                    data.forEach(obj => {
-                        for (let key in obj) {
-                            if (obj[key] == null || obj[key] == 0) delete obj[key];
-                        }
-                    })
-                }
-                resolve({
-                    EM: "Get data successfully",
-                    EC: 0,
-                    DT: data,
+            req.on('error', (error) => {
+                console.log("check error: " + error)
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: []
                 });
             });
 
+            req.write(JSON.stringify(payload));
+            req.end();
         });
-
-        req.on('error', (error) => {
-            console.log("check error: " + error)
-            reject({
-                EM: "Something wrong ...",
-                EC: -2,
-                DT: []
-            });
+    } catch (error) {
+        reject({
+            EM: "error server from api ...",
+            EC: -2,
+            DT: [],
         });
+    }
 
-        req.write(JSON.stringify(payload));
-        req.end();
-    });
 }
 
 const getSessionStudent = async (token = null, name) => {
+    try {
+        return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+            const yourBearToken = token ? token : process.env.tokenNLTB;
+            const today = new Date();
+            // Lấy ngày 15 ngày trước
+            const before15Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            // Format ngày dưới dạng ISO-8601
+            const before15DaysIoString = before15Days.toISOString();
+            const todayIsoString = today.toISOString();
+            console.log("check todayIsoString", todayIsoString);
+            console.log("check before15DaysIoString", before15DaysIoString);
 
-        const yourBearToken = token ? token : process.env.tokenNLTB;
-        const today = new Date();
-        // Lấy ngày 15 ngày trước
-        const before15Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-        // Format ngày dưới dạng ISO-8601
-        const before15DaysIoString = before15Days.toISOString();
-        const todayIsoString = today.toISOString();
-        console.log("check todayIsoString", todayIsoString);
-        console.log("check before15DaysIoString", before15DaysIoString);
+            const payload = {
+                administrativeUnitId: 35,
+                centerId: 52001,
+                courseTypeId: 0,
+                driverLicenseLevelName: null,
+                eventReloadName: null,
+                fromDate: before15DaysIoString,
+                keyword: null,
+                processed: 1,
+                providerId: 0,
+                qualifiedYn: null,
+                searchString: name,
+                status: 1,
+                timeFrom: before15DaysIoString,
+                timeTo: todayIsoString,
+                toDate: todayIsoString
+            }
+            const params = new URLSearchParams();
+            params.append('page', 0);
+            params.append('size', 10);
 
-        const payload = {
-            administrativeUnitId: 35,
-            centerId: 52001,
-            courseTypeId: 0,
-            driverLicenseLevelName: null,
-            eventReloadName: null,
-            fromDate: before15DaysIoString,
-            keyword: null,
-            processed: 1,
-            providerId: 0,
-            qualifiedYn: null,
-            searchString: name,
-            status: 1,
-            timeFrom: before15DaysIoString,
-            timeTo: todayIsoString,
-            toDate: todayIsoString
-        }
-        const params = new URLSearchParams();
-        params.append('page', 0);
-        params.append('size', 10);
+            //1 nốt bay màu SSL =))
+            let dataArr = [];
+            const options = {
+                hostname: process.env.hostnameNLTB,
+                port: 443,
+                path: '/api/session-data/search-report-session-data-reports?' + params.toString(),
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + yourBearToken
+                },
+                rejectUnauthorized: false // Set rejectUnauthorized to false
+            };
 
-        //1 nốt bay màu SSL =))
-        let dataArr = [];
-        const options = {
-            hostname: process.env.hostnameNLTB,
-            port: 443,
-            path: '/api/session-data/search-report-session-data-reports?' + params.toString(),
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + yourBearToken
-            },
-            rejectUnauthorized: false // Set rejectUnauthorized to false
-        };
+            const req = https.request(options, (res) => {
+                // console.log(`statusCode: ${res.statusCode}`);
+                const contentType = res.headers['content-type'];
+                if (!/^application\/json/.test(contentType)) {
+                    console.log(`Invalid content type. Expected application/json but received ${contentType}`);
+                    reject({
+                        EM: "Invalid content type",
+                        EC: -3,
+                        DT: [],
+                    });
+                }
 
-        const req = https.request(options, (res) => {
-            // console.log(`statusCode: ${res.statusCode}`);
+                res.on('data', (d) => {
+                    //   let data = process.stdout.write(d);
+                    dataArr.push(d);
+                });
 
-            res.on('data', (d) => {
-                //   let data = process.stdout.write(d);
-                dataArr.push(d);
+                res.on('end', () => {
+
+                    let data = [];
+                    if (dataArr.length > 0) {
+                        let dataBuffer = Buffer.concat(dataArr);
+                        data = JSON.parse(dataBuffer.toString());
+                        console.log('check data Phiên: ' + data);
+                        data.forEach(obj => {
+                            for (let key in obj) {
+                                if (obj[key] == null || obj[key] == 0) delete obj[key];
+                            }
+                        })
+                    }
+                    resolve({
+                        EM: "Get data successfully",
+                        EC: 0,
+                        DT: data,
+                    });
+                });
+
             });
 
-            res.on('end', () => {
-
-                let data = [];
-                if(dataArr.length>0){
-                    let dataBuffer = Buffer.concat(dataArr);
-                    data = JSON.parse(dataBuffer.toString());
-                    console.log('check data Phiên: ' + data);
-                    data.forEach(obj => {
-                        for (let key in obj) {
-                            if (obj[key] == null || obj[key] == 0) delete obj[key];
-                        }
-                    })
-                }
-                resolve({
-                    EM: "Get data successfully",
-                    EC: 0,
-                    DT: data,
+            req.on('error', (error) => {
+                console.log("check error Phien: " + error)
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: "",
                 });
             });
 
+            req.write(JSON.stringify(payload));
+            req.end();
         });
-
-        req.on('error', (error) => {
-            console.log("check error Phien: " + error)
-            reject({
-                EM: "Something wrong ...",
-                EC: -2,
-                DT: "",
-            });
+    } catch (error) {
+        reject({
+            EM: "error server from api ...",
+            EC: -2,
+            DT: [],
         });
+    }
 
-        req.write(JSON.stringify(payload));
-        req.end();
-    });
+
 }
 
 
 const getTokenService = async () => {
-    try{
+    try {
         return new Promise((resolve, reject) => {
             const payload = {
                 username: process.env.usernameNLTB,
@@ -218,9 +252,9 @@ const getTokenService = async () => {
                 responseCaptcha: 'hTaTorNY145de0BdEfdhuA==',
                 userCaptcha: '',
             }
-    
+
             let dataArr = [];
-    
+
             const options = {
                 hostname: process.env.hostnameNLTB,
                 port: 443,
@@ -232,10 +266,10 @@ const getTokenService = async () => {
                 },
                 rejectUnauthorized: false // Set rejectUnauthorized to false
             };
-    
+
             const req = https.request(options, (res) => {
                 console.log(`statusCode: ${res.statusCode}`);
-                if(res.statusCode != 200){
+                if (res.statusCode != 200) {
                     reject({
                         EM: "error server from api ...",
                         EC: -1,
@@ -252,18 +286,18 @@ const getTokenService = async () => {
                         DT: [],
                     });
                 }
-                
+
                 res.on('data', (d) => {
                     dataArr.push(d);
                 });
-    
+
                 res.on('end', () => {
                     let data = [];
-                    if(dataArr.length > 0){
+                    if (dataArr.length > 0) {
                         let dataBuffer = Buffer.concat(dataArr);
                         data = JSON.parse(dataBuffer.toString());
                     }
-    
+
                     console.log("check data", data)
                     resolve({
                         EM: "Get data successfully",
@@ -271,9 +305,9 @@ const getTokenService = async () => {
                         DT: data,
                     });
                 });
-    
+
             });
-    
+
             req.on('error', (error) => {
                 console.log("check error: " + error)
                 reject({
@@ -282,21 +316,21 @@ const getTokenService = async () => {
                     DT: "",
                 });
             });
-    
+
             req.write(JSON.stringify(payload));
             req.end();
         });
-    }catch(e){
+    } catch (e) {
         reject({
             EM: "error server from api ...",
             EC: -2,
             DT: [],
         });
     }
-    
+
 }
 
-const checkTokenService = async (req,res) => {
+const checkTokenService = async (req, res) => {
     return new Promise((resolve, reject) => {
         dotenv.config();
         const yourBearToken = process.env.tokenNLTB;
@@ -318,7 +352,7 @@ const checkTokenService = async (req,res) => {
         const req = https.request(options, (res) => {
             console.log(`statusCode: ${res.statusCode}`);
             console.log(`statusCode: ${res.statusCode}`);
-            if(res.statusCode != 200){
+            if (res.statusCode != 200) {
                 resolve({
                     EM: "error server from api ...",
                     EC: -1,
