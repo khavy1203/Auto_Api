@@ -34,7 +34,7 @@ const botTelegram = () => {
         }
         const data = await getTokenTelegram();
         console.log('check data in getToken', data)
-        if (!data?.DT?.id_token) {
+        if ( +data.EC != 0 || !data?.DT?.id_token) {
           await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
           return;
         } else {

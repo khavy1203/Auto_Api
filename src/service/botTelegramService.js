@@ -209,71 +209,91 @@ const getSessionStudent = async (token = null, name) => {
 
 
 const getTokenService = async () => {
-    return new Promise((resolve, reject) => {
-        const payload = {
-            username: process.env.usernameNLTB,
-            password: process.env.passwordNLTB,
-            rememberMe: true,
-            responseCaptcha: 'hTaTorNY145de0BdEfdhuA==',
-            userCaptcha: '',
-        }
-
-        let dataArr = [];
-
-        const options = {
-            hostname: process.env.hostnameNLTB,
-            port: 443,
-            path: '/api/authenticate',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': '_gid=GA1.3.587322599.1682866862; _gat_gtag_UA_235995231_1=1; _ga_XPNFBH5L32=GS1.1.1682866861.22.1.1682866900.0.0.0; _ga_KSJYQ8K5LK=GS1.1.1682866862.19.1.1682866900.0.0.0; _ga=GA1.3.790826531.1681994975'
-            },
-            rejectUnauthorized: false // Set rejectUnauthorized to false
-        };
-
-        const req = https.request(options, (res) => {
-            console.log(`statusCode: ${res.statusCode}`);
-            if(res.statusCode != 200){
-                resolve({
-                    EM: "error server from api ...",
-                    EC: -1,
-                    DT: [],
-                });
+    try{
+        return new Promise((resolve, reject) => {
+            const payload = {
+                username: process.env.usernameNLTB,
+                password: process.env.passwordNLTB,
+                rememberMe: true,
+                responseCaptcha: 'hTaTorNY145de0BdEfdhuA==',
+                userCaptcha: '',
+            }
+    
+            let dataArr = [];
+    
+            const options = {
+                hostname: process.env.hostnameNLTB,
+                port: 443,
+                path: '/api/authenticate',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': '_gid=GA1.3.587322599.1682866862; _gat_gtag_UA_235995231_1=1; _ga_XPNFBH5L32=GS1.1.1682866861.22.1.1682866900.0.0.0; _ga_KSJYQ8K5LK=GS1.1.1682866862.19.1.1682866900.0.0.0; _ga=GA1.3.790826531.1681994975'
+                },
+                rejectUnauthorized: false // Set rejectUnauthorized to false
             };
-            res.on('data', (d) => {
-                dataArr.push(d);
-            });
+    
+            const req = https.request(options, (res) => {
+                console.log(`statusCode: ${res.statusCode}`);
+                if(res.statusCode != 200){
+                    reject({
+                        EM: "error server from api ...",
+                        EC: -1,
+                        DT: [],
+                    });
+                };
 
-            res.on('end', () => {
-                let data = [];
-                if(dataArr.length > 0){
-                    let dataBuffer = Buffer.concat(dataArr);
-                    data = JSON.parse(dataBuffer.toString());
+                const contentType = res.headers['content-type'];
+                if (!/^application\/json/.test(contentType)) {
+                    console.log(`Invalid content type. Expected application/json but received ${contentType}`);
+                    reject({
+                        EM: "Invalid content type",
+                        EC: -3,
+                        DT: [],
+                    });
                 }
-
-                console.log("check data", data)
-                resolve({
-                    EM: "Get data successfully",
-                    EC: 0,
-                    DT: data,
+                
+                res.on('data', (d) => {
+                    dataArr.push(d);
+                });
+    
+                res.on('end', () => {
+                    let data = [];
+                    if(dataArr.length > 0){
+                        let dataBuffer = Buffer.concat(dataArr);
+                        data = JSON.parse(dataBuffer.toString());
+                    }
+    
+                    console.log("check data", data)
+                    resolve({
+                        EM: "Get data successfully",
+                        EC: 0,
+                        DT: data,
+                    });
+                });
+    
+            });
+    
+            req.on('error', (error) => {
+                console.log("check error: " + error)
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: "",
                 });
             });
-
+    
+            req.write(JSON.stringify(payload));
+            req.end();
         });
-
-        req.on('error', (error) => {
-            console.log("check error: " + error)
-            reject({
-                EM: "Something wrong ...",
-                EC: -2,
-                DT: "",
-            });
+    }catch(e){
+        reject({
+            EM: "error server from api ...",
+            EC: -2,
+            DT: [],
         });
-
-        req.write(JSON.stringify(payload));
-        req.end();
-    });
+    }
+    
 }
 
 const checkTokenService = async (req,res) => {
