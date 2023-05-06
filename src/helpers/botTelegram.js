@@ -22,24 +22,29 @@ const botTelegram = () => {
     // ctx.reply('U use bot');
     try {
       if (isFetchingData) {
-        if (ctx.chat.id != process.env.id_groupNLTB) {
-          await ctx.replyWithHTML('Vui lòng không truy vấn dữ liệu hoặc nhắn riêng trên tin nhắn riêng của bot, vui lòng truy vấn trên group chính thức : <a href="https://t.me/+NR_DldQ80ak0MTRl">DAT_NLTB</a> . Muốn truy vấn riêng trên bot, vui lòng nhắn tin trực tiếp cho em Vy (0987980417) để được cấp quyền nhắn tiêng riêng trên bot 🤖🤖', { disable_web_page_preview: true })
-          return
-        }
+        // if (ctx.chat.id != process.env.id_groupNLTB) {
+        //   await ctx.replyWithHTML('Vui lòng không truy vấn dữ liệu hoặc nhắn riêng trên tin nhắn riêng của bot, vui lòng truy vấn trên group chính thức : <a href="https://t.me/+NR_DldQ80ak0MTRl">DAT_NLTB</a> . Muốn truy vấn riêng trên bot, vui lòng nhắn tin trực tiếp cho em Vy (0987980417) để được cấp quyền nhắn tin riêng trên bot 🤖🤖', { disable_web_page_preview: true })
+        //   return
+        // }
         if (ctx.update.message && ctx.update.message.new_chat_members) {
           for (let member of ctx.update.message.new_chat_members) {
             await ctx.reply(`Chào mừng thầy ${member.first_name} đến với nhóm! \n ${helpMessage}`)
             return
           }
         }
-        const data = await getTokenTelegram();
-        console.log('check data in getToken', data)
-        if (+data.EC != 0 || !data?.DT?.id_token) {
-          await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
-          return;
-        } else {
-          ctx.state.tokenNLTB = data?.DT?.id_token;
+        const checkData = await checkTokenTelegram();
+        console.log("check data in check token", checkData);
+        if(+checkData?.EC != 0 || !checkData?.DT?.length) {
+          const data = await getTokenTelegram();
+          console.log('check data in getToken', data)
+          if (+data.EC != 0 || !data?.DT?.id_token) {
+            await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+            return;
+          } else {
+            ctx.state.tokenNLTB = data?.DT?.id_token;
+          }
         }
+        ctx.state.tokenNLTB = process.env.tokenNLTB;
         console.log('check ctx in middleware', ctx)
         next(ctx);
       }
