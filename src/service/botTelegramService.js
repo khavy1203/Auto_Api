@@ -181,6 +181,15 @@ const getSessionStudent = async (token = null, name) => {
 
 			const req = https.request(options, (res) => {
 				// console.log(`statusCode: ${res.statusCode}`);
+
+				if (res.statusCode != 200) {
+					reject({
+						EM: "error server from api ...",
+						EC: -1,
+						DT: [],
+					});
+				};
+
 				const contentType = res.headers['content-type'];
 				if (!/^application\/json/.test(contentType)) {
 					console.log(`Invalid content type. Expected application/json but received ${contentType}`);
@@ -199,16 +208,25 @@ const getSessionStudent = async (token = null, name) => {
 				res.on('end', () => {
 
 					let data = [];
-					if (dataArr.length > 0) {
-						let dataBuffer = Buffer.concat(dataArr);
-						data = JSON.parse(dataBuffer.toString());
-						console.log('check data Phiên: ' + data);
-						data.forEach(obj => {
-							for (let key in obj) {
-								if (obj[key] == null || obj[key] == 0) delete obj[key];
-							}
-						})
+					try {
+						if (dataArr.length > 0) {
+							let dataBuffer = Buffer.concat(dataArr);
+							data = JSON.parse(dataBuffer.toString());
+							console.log('check data Phiên: ' + data);
+							data.forEach(obj => {
+								for (let key in obj) {
+									if (obj[key] == null || obj[key] == 0) delete obj[key];
+								}
+							})
+						}
+					} catch (error) {
+						reject({
+							EM: "error server from api ...",
+							EC: -1,
+							DT: [],
+						});
 					}
+
 					resolve({
 						EM: "Get data successfully",
 						EC: 0,
@@ -293,10 +311,19 @@ const getTokenService = async () => {
 
 				res.on('end', () => {
 					let data = [];
-					if (dataArr.length > 0) {
-						let dataBuffer = Buffer.concat(dataArr);
-						data = JSON.parse(dataBuffer.toString());
+					try {
+						if (dataArr.length > 0) {
+							let dataBuffer = Buffer.concat(dataArr);
+							data = JSON.parse(dataBuffer.toString());
+						}
+					} catch (error) {
+						reject({
+							EM: "error server from api ...",
+							EC: -1,
+							DT: [],
+						});
 					}
+
 
 					console.log("check data", data)
 					resolve({
@@ -330,7 +357,7 @@ const getTokenService = async () => {
 
 }
 
-const  checkTokenService = async (req, res) => {
+const checkTokenService = async (req, res) => {
 	try {
 		return new Promise((resolve, reject) => {
 			dotenv.config();
@@ -380,7 +407,7 @@ const  checkTokenService = async (req, res) => {
 						dataBuffer = Buffer.concat(dataArr);
 						data = JSON.parse(dataBuffer.toString());
 						console.log("check data", data)
-						
+
 					} catch (error) {
 						reject({
 							EM: "Something wrong ...",
@@ -388,7 +415,7 @@ const  checkTokenService = async (req, res) => {
 							DT: "",
 						});
 					}
-				
+
 					resolve({
 						EM: "Get data successfully",
 						EC: 0,
