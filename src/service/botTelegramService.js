@@ -617,13 +617,13 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			console.log('check filteredArrayNotUpdate[0]', filteredArrayNotUpdate[0])
 			if(filteredArrayNotUpdate.length > 0){
 				return ({
-					EM: `<b>Hãy trao cho em Vy huy chương 🏅 sau khi em đã tìm kiếm cật lực và phát hiện ra ${filteredArrayNotUpdate.length} phiên bị mất. Hãy liên hệ cho em để được cíu 🐧🐧🐧</b> \n`,
+					EM: `<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và phát hiện ra ${filteredArrayNotUpdate.length} phiên bị mất. Hãy liên hệ cho em để được cíu 🐧🐧🐧</b> \n`,
 					EC: 0,
 					DT: filteredArrayNotUpdate,
 				});
 			}else{
 				return ({
-					EM: "<b>Hãy trao cho em Vy huy chương 🏅 sau khi em đã tìm kiếm cật lực và không phát hiện ra phiên nào bị mất. Chúc quý thầy sớm có kết hoạch chạy đủ km/giờ cho học viên 🐧🐧🐧</b> \n",
+					EM: "<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và không phát hiện ra phiên nào bị mất. Chúc quý thầy sớm có kết hoạch chạy đủ km/giờ cho học viên 🐧🐧🐧</b> \n",
 					EC: 1,
 					DT: [],
 				});

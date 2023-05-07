@@ -48,7 +48,7 @@ const botTelegram = () => {
             isFetchingData = true;
             return;
           }
-          const regex = /^(52001|[\d]{6})-\d{8}-\d{6}$/;
+          const regex = /^(?:\d{4}-\d{8}-\d{6}|\d{6})$/;
           if (!regex.test(mhv)) {
             await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại');
             isFetchingData = true;
@@ -284,13 +284,13 @@ const botTelegram = () => {
         isFetchingData = true;
         return;
       }
-      const regex = /^(52001|[\d]{6})-\d{8}-\d{6}$/;
+      const regex = /^(?:\d{4}-\d{8}-\d{6}|\d{6})$/;
       if (!regex.test(mhv)) {
         await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại');
         isFetchingData = true;
         return;
       }
-      //call api get student info
+      // call api get student info
       let tokenNLTB = ctx?.state?.tokenNLTB;
       let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
 
