@@ -302,10 +302,16 @@ const botTelegram = () => {
           let pr1 = {};
           const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i}</b></code>\n<i>Họ và Tên:</i> <b>${e?.HoTen}</b>\n<i>Mã học viên:</i> <b>${e?.MaDK}</b>\n<i>Khoá học:</i> <b>${e?.KhoaHoc}</b>\n<i>Đăng nhập:</i> <b>${e?.DangNhap}</b>\n<i>Đăng xuất:</i> <b>${e?.DangXuat}</b>\n<i>Tổng thời gian:</i> <b>${e?.TongTG}</b>\n<i>Tổng quãng đường:</i> <b>${e?.TongQD}</b>\n`;
           if(i == 1){
-            pr1 = await ctx.replyWithHTML( res?.EM + "\n"+ row);
-          }else if(i == res.DT.length - 1){
+            if(res.DT.length == 1){
+            pr1 = await ctx.replyWithHTML( res?.EM + "\n"+ row + '\n<i><b>Hãy liên hệ em Vy. Hy vọng em Vy sẽ cíu được phiên của các thầy 🏩🏩🏩</b></i>');
+            }else{
+              pr1 = await ctx.replyWithHTML( res?.EM + "\n"+ row);
+            }
+
+          }else if(i == res.DT.length){
             pr1 =  await ctx.replyWithHTML( row + '\n<i><b>Hãy liên hệ em Vy. Hy vọng em Vy sẽ cíu được phiên của các thầy 🏩🏩🏩</b></i>');
-          }else{
+          }
+          else{
             pr1 = await ctx.replyWithHTML(row);
           }
           const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
