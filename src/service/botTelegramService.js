@@ -458,8 +458,8 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			// Format ngày dưới dạng ISO-8601
 			const before15DaysIoString = before15Days.toISOString();
 			const todayIsoString = today.toISOString();
-			console.log("check todayIsoString", todayIsoString);
-			console.log("check before15DaysIoString", before15DaysIoString);
+			console.log("check todayIsoString trên tổng cục", todayIsoString);
+			console.log("check before15DaysIoString trên tổng cục", before15DaysIoString);
 
 			const payload = {
 				administrativeUnitId: 35,
@@ -570,10 +570,10 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			// Lấy ngày 15 ngày trước
 			const before15Days = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000);
 			// Format ngày dưới dạng ISO-8601
-			const before15DaysIoString = before15Days.toISOString().slice(0, 10);
-			const todayIsoString = today.toISOString().slice(0, 10) + " 23:59:59";
-			console.log("check todayIsoString", todayIsoString);
-			console.log("check before15DaysIoString", before15DaysIoString);
+			const before15DaysIoString = before15Days.toISOString();
+			const todayIsoString = today.toISOString();
+			console.log("check todayIsoString dưới local", todayIsoString);
+			console.log("check before15DaysIoString dưới local", before15DaysIoString);
 
 			const params = new URLSearchParams();
 			params.append('ten', mhv);
