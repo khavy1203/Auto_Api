@@ -1,9 +1,12 @@
 import nltbService from "../service/nltbService";
 import botTelegramService from "../service/botTelegramService";
+import { resolve } from "path";
 const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const dotenv = require('dotenv');
+const axios = require('axios');
+
 require('dotenv').config();
 
 const getToken = async (req, res) => {
@@ -112,7 +115,7 @@ const checkTokenTelegram = async (req, res) => {
     });
   } catch (e) {
     console.log("check error", e)
-    return res.status(500).json({
+    return ({
       EM: "error from sever", //error message
       EC: "-1", //error code
       DT: "",
@@ -136,7 +139,7 @@ const attachToken = async (req, res, next) => {
 
   } catch (e) {
     console.log("check error", e)
-    return res.status(500).json({
+    return ({
       EM: "error from sever", //error message
       EC: "-1", //error code
       DT: "",
@@ -144,10 +147,96 @@ const attachToken = async (req, res, next) => {
   }
 }
 
+const checkTokenInLocalNLTB = async () => {
+	return new Promise((resolve,reject) => {
+
+		const yourBearToken = process.env.tokenLocalNLTB;
+
+		const getSessionStu = axios.create({
+			baseURL: process.env.hostnameLocal,
+			headers: {
+				'Authorization': `Bearer ${yourBearToken}`
+			}
+		})
+
+		getSessionStu.get('/api/loaixe')
+			.then(response => {
+				resolve({
+					EM: "Get data successfully",
+					EC: 0,
+					DT: response?.data?.Data,
+				});
+			})
+			.catch(error => {
+				resolve({
+					EM: "Something wrong ...",
+					EC: -2,
+					DT: "",
+				});
+			});
+	}); 
+}
+
+const getTokenInLocalNLTB = async () => {
+  return new Promise((resolve,reject) => {
+
+		const yourBearToken = process.env.tokenLocalNLTB;
+
+		const getSessionStu = axios.create({
+			baseURL: process.env.hostnameLocal,
+			headers: {
+				'Authorization': `Bearer ${yourBearToken}`
+			}
+		})
+    const payload = {
+      "Username": process.env.usernameLocalNLTB,
+      "Password": process.env.passwordLocalNLTB
+    }
+		getSessionStu.post('/api/Login', payload)
+			.then(response => {
+        if (response?.data?.Token != null) {
+          dotenv.config();
+          const envConfig = dotenv.parse(fs.readFileSync('.env'));
+            // Thay đổi giá trị của biến API_SECRET
+          process.env.tokenLocalNLTB = `${response?.data?.Token}`;
+          envConfig.tokenLocalNLTB = `${response?.data?.Token}`;
+    
+          const envContent = Object.entries(envConfig).map(([key, value]) => `${key}=${value}`).join('\n');
+          // Ghi lại nội dung của biến môi trường vào file .env
+          console.log("check envContent", envContent)
+          fs.writeFileSync('.env', envContent);
+    
+          // Lưu lại và đóng file
+          dotenv.config();
+          resolve({
+            EM: "Get data successfully",
+            EC: 0,
+            DT: response?.data?.Token,
+          });
+        }else{
+          resolve({
+            EM: "Get Token fail",
+            EC: -2,
+            DT: "",
+          });
+        }
+				
+			})
+			.catch(error => {
+				resolve({
+					EM: "Something wrong ...",
+					EC: -2,
+					DT: "",
+				});
+			});
+	}); 
+}
 module.exports = {
   attachToken,
   checkToken,
   getToken,
   getTokenTelegram,
-  checkTokenTelegram
+  checkTokenTelegram,
+  checkTokenInLocalNLTB,
+  getTokenInLocalNLTB
 };
