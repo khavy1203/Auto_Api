@@ -454,7 +454,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			const yourBearToken = tokenTongCuc ? tokenTongCuc : process.env.tokenNLTB;
 			const today = new Date();
 			// Lấy ngày 15 ngày trước
-			const before15Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+			const before15Days = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000);
 			// Format ngày dưới dạng ISO-8601
 			const before15DaysIoString = before15Days.toISOString();
 			const todayIsoString = today.toISOString();
@@ -568,7 +568,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			const yourBearToken = tokenLocalNLTB ? tokenLocalNLTB : process.env.tokenLocalNLTB;
 			const today = new Date();
 			// Lấy ngày 15 ngày trước
-			const before15Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+			const before15Days = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000);
 			// Format ngày dưới dạng ISO-8601
 			const before15DaysIoString = before15Days.toISOString().slice(0, 10);
 			const todayIsoString = today.toISOString().slice(0, 10) + " 23:59:59";
