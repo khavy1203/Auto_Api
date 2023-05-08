@@ -454,12 +454,13 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			const yourBearToken = tokenTongCuc ? tokenTongCuc : process.env.tokenNLTB;
 			const today = new Date();
 			// Lấy ngày 15 ngày trước
-			const before15Days = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000);
+			const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+			const before15Days = new Date(todaySum2.getTime() - 30 * 24 * 60 * 60 * 1000);
 			// Format ngày dưới dạng ISO-8601
 			const before15DaysIoString = before15Days.toISOString();
-			const todayIsoString = today.toISOString();
-			console.log("check todayIsoString trên tổng cục", todayIsoString);
-			console.log("check before15DaysIoString trên tổng cục", before15DaysIoString);
+			const todayIsoString = todaySum2.toISOString();
+			console.log("check todayIsoString dưới local", todayIsoString);
+			console.log("check before15DaysIoString dưới local", before15DaysIoString);
 
 			const payload = {
 				administrativeUnitId: 35,
@@ -568,28 +569,28 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			const yourBearToken = tokenLocalNLTB ? tokenLocalNLTB : process.env.tokenLocalNLTB;
 			const today = new Date();
 			// Lấy ngày 15 ngày trước
-			const before15Days = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000);
+			const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+			const before15Days = new Date(todaySum2.getTime() - 30 * 24 * 60 * 60 * 1000);
 			// Format ngày dưới dạng ISO-8601
 			const before15DaysIoString = before15Days.toISOString();
-			const todayIsoString = today.toISOString();
+			const todayIsoString = todaySum2.toISOString();
 			console.log("check todayIsoString dưới local", todayIsoString);
 			console.log("check before15DaysIoString dưới local", before15DaysIoString);
 
 			const params = new URLSearchParams();
-			params.append('ten', mhv);
-			params.append('ngaybatdau', before15DaysIoString);
-			params.append('ngayketthuc', todayIsoString);
+			params.append('ten', mhv.trim());
+			params.append('ngaybatdau', before15DaysIoString.slice(0, 10));
+			params.append('ngayketthuc', todayIsoString.slice(0, 10));
 			params.append('page', 1);
 			params.append('limit', 10);
-
+			console.log("check mhv", mhv)
 			const getSessionStu = axios.create({
-				baseURL: process.env.hostnameLocal,
 				headers: {
 					'Authorization': `Bearer ${yourBearToken}`
 				}
 			})
 
-			getSessionStu.get('/api/HanhTrinh?' + params.toString())
+			getSessionStu.get(process.env.hostnameLocal + '/api/HanhTrinh?' + params.toString())
 				.then(response => {
 					resolve({
 						EM: "Get data successfully",
@@ -608,13 +609,12 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 
 
 		}); 
-		const prAll= Promise.all([pr1, pr2]).then((values) => {
+		const prAll= await Promise.all([pr1, pr2]).then((values) => {
 			const dtTongcuc = values[0]?.DT;
 			const dtLocal = values[1]?.DT;
 			console.log('check length', dtTongcuc.length, dtLocal.length)
 
 			const filteredArrayNotUpdate = dtLocal.filter(obj2 => !dtTongcuc.some(obj1 => obj1.sessionGuid == obj2.SessionId));
-			console.log('check filteredArrayNotUpdate[0]', filteredArrayNotUpdate[0])
 			if(filteredArrayNotUpdate.length > 0){
 				return ({
 					EM: `<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và phát hiện ra ${filteredArrayNotUpdate.length} phiên bị mất. Hãy liên hệ cho em để được cíu 🐧🐧🐧</b> \n`,
