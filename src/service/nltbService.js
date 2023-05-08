@@ -1,6 +1,5 @@
 const XLSX = require('xlsx');
 const { saveAs } = require('file-saver');
-const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 const https = require('https');
@@ -156,7 +155,7 @@ const getTokenService = async () => {
 
         const req = https.request(options, (res) => {
             console.log(`statusCode: ${res.statusCode}`);
-            if(res.statusCode != 200){
+            if (res.statusCode != 200) {
                 resolve({
                     EM: "error server from api ...",
                     EC: -1,
@@ -169,7 +168,7 @@ const getTokenService = async () => {
 
             res.on('end', () => {
                 let data = [];
-                if(dataArr.length > 0){
+                if (dataArr.length > 0) {
                     let dataBuffer = Buffer.concat(dataArr);
                     data = JSON.parse(dataBuffer.toString());
                 }
@@ -197,7 +196,7 @@ const getTokenService = async () => {
         req.end();
     });
 }
-const checkTokenService = async (req,res) => {
+const checkTokenService = async (req, res) => {
     return new Promise((resolve, reject) => {
         dotenv.config();
         const yourBearToken = process.env.tokenNLTB;
@@ -253,86 +252,87 @@ const checkTokenService = async (req,res) => {
 
 const apiGetInfoStudentOnSource = async (maKH, page) => {
     if (maKH)
-      return new Promise((resolve, reject) => {
-        const yourBearToken = process.env.tokenNLTB;
-        
-        const payload = {
-          administrativeUnitId: 35,
-          centerId: null,
-          centerIdParam: null,
-          driverLicenseLevelName: null,
-          eventReloadName: null,
-          fromDate: null,
-          practiceResultId: null,
-          providerId: null,
-          qualifiedYn: null,
-          timeFrom: null,
-          timeTo: null,
-          toDate: null,
-          searchString: maKH
-        }
-        const params = new URLSearchParams();
-        params.append('page', page);
-        params.append('size', 20);
-  
-        let dataArr = [];
-  
-        const options = {
-          hostname: process.env.hostnameNLTB,
-          port: 443,
-          path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + yourBearToken
-          },
-          rejectUnauthorized: false // Set rejectUnauthorized to false
-        };
-  
-        const req = https.request(options, (res) => {
-          console.log(`statusCode: ${res.statusCode}`);
-  
-          res.on('data', (d) => {
-            dataArr.push(d);
-          });
-  
-          res.on('end', () => {
-            let dataBuffer = Buffer.concat(dataArr);
-            let data = JSON.parse(dataBuffer.toString());
-  
-            data.forEach(obj => {
-              for (let key in obj) {
-                if (obj[key] == null || obj[key] == 0) delete obj[key];
-              }
-            })
-  
-            resolve({
-              EM: "Get data successfully",
-              EC: 0,
-              DT: data,
+        return new Promise((resolve, reject) => {
+            const yourBearToken = process.env.tokenNLTB;
+
+            const payload = {
+                administrativeUnitId: 35,
+                centerId: null,
+                centerIdParam: null,
+                driverLicenseLevelName: null,
+                eventReloadName: null,
+                fromDate: null,
+                practiceResultId: null,
+                providerId: null,
+                qualifiedYn: null,
+                timeFrom: null,
+                timeTo: null,
+                toDate: null,
+                searchString: maKH
+            }
+            const params = new URLSearchParams();
+            params.append('page', page);
+            params.append('size', 20);
+
+            let dataArr = [];
+
+            const options = {
+                hostname: process.env.hostnameNLTB,
+                port: 443,
+                path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + yourBearToken
+                },
+                rejectUnauthorized: false // Set rejectUnauthorized to false
+            };
+
+            const req = https.request(options, (res) => {
+                console.log(`statusCode: ${res.statusCode}`);
+
+                res.on('data', (d) => {
+                    dataArr.push(d);
+                });
+
+                res.on('end', () => {
+                    let dataBuffer = Buffer.concat(dataArr);
+                    let data = JSON.parse(dataBuffer.toString());
+
+                    data.forEach(obj => {
+                        for (let key in obj) {
+                            if (obj[key] == null || obj[key] == 0) delete obj[key];
+                        }
+                    })
+
+                    resolve({
+                        EM: "Get data successfully",
+                        EC: 0,
+                        DT: data,
+                    });
+                });
+
             });
-          });
-  
+
+            req.on('error', (error) => {
+                console.log("check error: " + error)
+                reject({
+                    EM: "Something wrong ...",
+                    EC: -2,
+                    DT: "",
+                });
+            });
+
+            req.write(JSON.stringify(payload));
+            req.end();
         });
-  
-        req.on('error', (error) => {
-          console.log("check error: " + error)
-          reject({
-            EM: "Something wrong ...",
-            EC: -2,
-            DT: "",
-          });
-        });
-  
-        req.write(JSON.stringify(payload));
-        req.end();
-      });
-  }
+}
+
 
 module.exports = {
     apiGetInfoStudent,
     fetchAPIonFile,
     getTokenService,
     checkTokenService,
-    apiGetInfoStudentOnSource
+    apiGetInfoStudentOnSource,
 }

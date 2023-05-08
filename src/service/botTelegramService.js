@@ -623,7 +623,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 				});
 			}else{
 				return ({
-					EM: "<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và không phát hiện ra phiên nào bị mất. Chúc quý thầy sớm có kết hoạch chạy đủ km/giờ cho học viên 🐧🐧🐧</b> \n",
+					EM: "<b>Rât vui là không có phiên nào bị mất. Nếu quý Thầy chắc chắn rằng mình chạy bị thiếu phiên thì chỉ có thể là dữ liệu chưa lên. Thầy vui lòng chạy ra xe mở máy DAT lên để máy tự động upload dữ liệu và Kiểm tra lại. Nếu kiểm tra vẫn không có thì chia buồn cùng thầy 🐧🐧🐧</b> \n",
 					EC: 1,
 					DT: [],
 				});

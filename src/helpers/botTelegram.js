@@ -22,6 +22,7 @@ const botTelegram = () => {
   bot.use(async (ctx, next) => {
     // ctx.reply('U use bot');
     try {
+      console.log("bot đã hoạt động")
       if (isFetchingData) {
         // if (ctx.chat.id != process.env.id_groupNLTB) {
         //   await ctx.replyWithHTML('Vui lòng không truy vấn dữ liệu hoặc nhắn riêng trên tin nhắn riêng của bot, vui lòng truy vấn trên group chính thức : <a href="https://t.me/+NR_DldQ80ak0MTRl">DAT_NLTB</a> . Muốn truy vấn riêng trên bot, vui lòng nhắn tin trực tiếp cho em Vy (0987980417) để được cấp quyền nhắn tin riêng trên bot 🤖🤖', { disable_web_page_preview: true })
@@ -41,7 +42,9 @@ const botTelegram = () => {
 
         if (commandCheckPhien === '/matphien') {
 
-          const mhv = input.join(" ");
+          console.log('checcckkk input', input)
+
+          const mhv = input[0];
           console.log("mhv", mhv);
           if (!mhv) {
             await ctx.reply(helpMessage);
@@ -50,12 +53,13 @@ const botTelegram = () => {
           }
           const regex = /^(?:\d{4}-\d{8}-\d{6}|\d{6})$/;
           if (!regex.test(mhv)) {
-            await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại');
+            await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại. Vui lòng lấy 6 số cuối của mã học viên');
             isFetchingData = true;
             return;
           }
 
           const res = await checkTokenInLocalNLTB();
+          console.log('check res', res)
           if (res.EC == 0) {
             ctx.state.tokenLocalNLTB = process.env.tokenLocalNLTB;
           } else {
@@ -64,7 +68,8 @@ const botTelegram = () => {
               ctx.state.tokenLocalNLTB = getTokenLocalNLTB.DT
             }else{
               await ctx.reply('Lỗi lấy token ở localNLTB, vui lòng thử lại sau');
-              return
+              isFetchingData = true;
+              return;
             }
           }
         }
@@ -76,6 +81,7 @@ const botTelegram = () => {
           console.log('check data in getToken', data)
           if (+data.EC != 0 || !data?.DT?.id_token) {
             await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+            isFetchingData = true;
             return;
           } else {
             ctx.state.tokenNLTB = data?.DT?.id_token;
@@ -88,7 +94,8 @@ const botTelegram = () => {
     } catch (e) {
       console.log("check error", e)
       await ctx.reply('Lỗi server bot, hãy liên hệ Khả Vy để được fix sớm nhất');
-      return
+      isFetchingData = true;
+      return;
     }
   })
 
@@ -122,6 +129,7 @@ const botTelegram = () => {
       console.log('check data', res);
       if (+res?.EC != 0) {
         await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        isFetchingData = true;
         return;
       }
       let i = 1;
@@ -141,6 +149,7 @@ const botTelegram = () => {
         return;
       }
     }
+    isFetchingData = true;
     return;
   })
 
@@ -165,6 +174,7 @@ const botTelegram = () => {
       let i = 1;
       if (+res?.EC != 0) {
         await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        isFetchingData = true;
         return;
       }
       if (res.EC == 0 && res.DT.length > 0) {
@@ -183,6 +193,7 @@ const botTelegram = () => {
         return;
       }
     }
+    isFetchingData = true;
     return;
   })
 
@@ -207,6 +218,7 @@ const botTelegram = () => {
       let i = 1;
       if (+res?.EC != 0) {
         await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        isFetchingData = true;
         return;
       }
       if (res.EC == 0 && res.DT.length > 0) {
@@ -225,6 +237,7 @@ const botTelegram = () => {
         return;
       }
     }
+    isFetchingData = true;
     return;
   })
 
@@ -238,6 +251,7 @@ const botTelegram = () => {
       console.log("name", name);
       if (+res?.EC != 0) {
         await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+        isFetchingData = true;
         return;
       }
       if (!name) {
@@ -267,6 +281,7 @@ const botTelegram = () => {
         return;
       }
     }
+    isFetchingData = true;
     return;
   })
 
@@ -277,7 +292,7 @@ const botTelegram = () => {
       let input = ctx.message.text.split(" ");
       input.shift();
       console.log('check input', input)
-      const mhv = input.join(" ");
+      const mhv = input[0];
       console.log("mhv", mhv);
       if (!mhv) {
         await ctx.reply(helpMessage);
@@ -286,7 +301,7 @@ const botTelegram = () => {
       }
       const regex = /^(?:\d{4}-\d{8}-\d{6}|\d{6})$/;
       if (!regex.test(mhv)) {
-        await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại');
+        await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại. Vui lòng lấy 6 số cuối của mã học viên');
         isFetchingData = true;
         return;
       }

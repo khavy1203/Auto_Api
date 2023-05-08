@@ -125,20 +125,38 @@ const checkTokenTelegram = async (req, res) => {
 
 const attachToken = async (req, res, next) => {
   try {
-    const ulrAPINLTB = '/api/v1/nltb/';
+    const ulrAPINLTB = '/nltb/';
+    const ulrAPINLTBLocal = '/nltbLocal/';
     console.log('check req.url', req.url);
-    if (ulrAPINLTB.includes(req.url)) {
+    console.log("req.url.includes(ulrAPINLTB)", req.url.includes(ulrAPINLTB))
+    console.log("check req.url.includes(ulrAPINLTBLocal)",req.url.includes(ulrAPINLTBLocal))
+    if (req.url.includes(ulrAPINLTB)) {
+      console.log("vô 1")
       const res1 = await checkToken();
       console.log("check res 1", res1);
       if (res1?.DT?.status == 401) {
         const data = await getToken();
         req.token = data?.DT?.id_token;
+      }else{
+        req.token = process.env.tokenNLTB;
       }
+    }else if (req.url.includes(ulrAPINLTBLocal)) {
+      console.log("vô 2")
+      const res1 = await checkTokenInLocalNLTB();
+      console.log("check res 1", res1);
+      if (res1?.EC != 0) {
+        const data = await getTokenInLocalNLTB();
+        req.token = data?.DT;
+      }else{
+        req.token = process.env.tokenLocalNLTB;
+      }
+
     }
+    console.log("check req.token", req.token)
     next();
 
   } catch (e) {
-    console.log("check error", e)
+    console.error("check error", e)
     return ({
       EM: "error from sever", //error message
       EC: "-1", //error code
@@ -231,6 +249,7 @@ const getTokenInLocalNLTB = async () => {
 			});
 	}); 
 }
+
 module.exports = {
   attachToken,
   checkToken,
@@ -238,5 +257,5 @@ module.exports = {
   getTokenTelegram,
   checkTokenTelegram,
   checkTokenInLocalNLTB,
-  getTokenInLocalNLTB
-};
+  getTokenInLocalNLTB,
+}

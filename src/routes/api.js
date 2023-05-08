@@ -1,5 +1,6 @@
 import express from "express";
-import nltbController from "../controller/nltbController"
+import nltbController from "../controller/nltbController";
+import nltbLocalController from "../controller/nltbLocalController";
 import {attachToken} from "../middleware/tokenAction";
 require("dotenv").config();
 const routes = express.Router();
@@ -13,6 +14,8 @@ const apiRoutes = (app) => {
   routes.post("/nltb/queryDataOnMKH", nltbController.fetchAPIonMaKH);
   routes.get("/nltb/getToken", nltbController.getToken);
   routes.get("/nltb/checkToken", nltbController.checkToken);
+
+  routes.post("/nltbLocal/inDat", nltbLocalController.nltbLocalInDat);
 
   return app.use("/api/v1/", routes);
 }
