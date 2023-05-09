@@ -593,7 +593,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			console.log("check before15DaysIoString dưới local", before15DaysIoString);
 
 			const params = new URLSearchParams();
-			params.append('ten', mhv.trim());
+			params.append('ten', mhv?.trim());
 			params.append('ngaybatdau', before15DaysIoString.slice(0, 10));
 			params.append('ngayketthuc', todayIsoString.slice(0, 10));
 			params.append('page', 1);

@@ -10,7 +10,7 @@ require('dotenv').config();
 const botTelegram = () => {
 
   const helpMessage = `
-    Các cú pháp sử dụng bot:
+    Các cú pháp sử dụng bot ( CÁC CÚ PHÁP VUI LÒNG KHÔNG DẤU ) : 
       /dat tenhocvien hoặc mãhọcviên (Kiểm tra DAT học viên)
       /phien tenhocvien hoặc mãhọcviên (Kiểm tra Phiên học viên)
       /matphien mãhọcviên ( Nhằm kiếm tra bị "MẤT PHIÊN" - đối chiếu dữ liệu phiên giữa máy DAT và trên Tổng Cục, để xử lý cho các thầy có thể tìm kiếm được phiên bị mất, hoặc phiên load quá lâu trên 12h)
@@ -45,7 +45,7 @@ const botTelegram = () => {
 
           console.log('checcckkk input', input)
 
-          const mhv = input[0].trim();
+          const mhv = input[0]?.trim();
           console.log("mhv", mhv);
           if (!mhv) {
             await ctx.reply(helpMessage);
@@ -111,7 +111,7 @@ const botTelegram = () => {
   })
 
   bot.command('dat', async (ctx) => {
-    try{
+    try {
       if (isFetchingData) {
         isFetchingData = false;
         console.log("DAT detected", ctx);
@@ -153,16 +153,16 @@ const botTelegram = () => {
       }
       isFetchingData = true;
       return;
-    }catch(e){
+    } catch (e) {
       await ctx.reply("Vui lòng thử lại sau !!!");
       isFetchingData = true;
       return;
     }
-    
+
   })
 
   bot.command('DAT', async (ctx) => {
-    try{
+    try {
       if (isFetchingData) {
         isFetchingData = false;
         console.log("DAT detected", ctx);
@@ -204,7 +204,7 @@ const botTelegram = () => {
       }
       isFetchingData = true;
       return;
-    }catch(e){
+    } catch (e) {
       await ctx.reply("Vui lòng thử lại sau !!!");
       isFetchingData = true;
       return;
@@ -212,7 +212,7 @@ const botTelegram = () => {
   })
 
   bot.command('phien', async (ctx) => {
-    try{
+    try {
       if (isFetchingData) {
         isFetchingData = false;
         console.log("DAT detected", ctx);
@@ -239,7 +239,7 @@ const botTelegram = () => {
         if (res.EC == 0 && res.DT.length > 0) {
           for (const e of res.DT) {
             const startTime = e?.startTime ? moment(e?.startTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss') : "";
-            const endTime = e?.endTime ? moment(e?.endTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss'):"";
+            const endTime = e?.endTime ? moment(e?.endTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss') : "";
 
             const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${startTime}</b>\n<i>Thời gian kết thúc:</i>  <b>${endTime}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
 
@@ -258,16 +258,16 @@ const botTelegram = () => {
       }
       isFetchingData = true;
       return;
-    }catch(e){
+    } catch (e) {
       await ctx.reply("Vui lòng thử lại sau !!!");
       isFetchingData = true;
       return;
     }
-    
+
   })
 
   bot.command('PHIEN', async (ctx) => {
-    try{
+    try {
       if (isFetchingData) {
         isFetchingData = false;
         console.log("DAT detected", ctx);
@@ -309,7 +309,7 @@ const botTelegram = () => {
       }
       isFetchingData = true;
       return;
-    }catch(e){
+    } catch (e) {
       await ctx.reply("Vui lòng thử lại sau !!!");
       isFetchingData = true;
       return;
@@ -324,7 +324,7 @@ const botTelegram = () => {
         let input = ctx.message.text.split(" ");
         input.shift();
         console.log('check input', input)
-        const mhv = input[0].trim();
+        const mhv = input[0]?.trim();
         console.log("mhv", mhv);
         if (!mhv) {
           await ctx.reply(helpMessage);
@@ -340,7 +340,7 @@ const botTelegram = () => {
         // call api get student info
         let tokenNLTB = ctx?.state?.tokenNLTB;
         let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
-  
+
         const res = await botTelegramService.checkSession(tokenNLTB, tokenLocalNLTB, mhv);
         console.log('check res', res.EM);
         let i = 1;
@@ -354,7 +354,7 @@ const botTelegram = () => {
               } else {
                 pr1 = await ctx.replyWithHTML(res?.EM + "\n" + row);
               }
-  
+
             } else if (i == res.DT.length) {
               pr1 = await ctx.replyWithHTML(row + '\n<i><b>Hãy liên hệ em Vy. Hy vọng em Vy sẽ cíu được phiên của các thầy 🏩🏩🏩</b></i>');
             }
@@ -381,7 +381,7 @@ const botTelegram = () => {
       isFetchingData = true;
       return;
     }
-   
+
   })
 
   bot.command('MATPHIEN', async (ctx) => {
@@ -392,7 +392,7 @@ const botTelegram = () => {
         let input = ctx.message.text.split(" ");
         input.shift();
         console.log('check input', input)
-        const mhv = input[0].trim();
+        const mhv = input[0]?.trim();
         console.log("mhv", mhv);
         if (!mhv) {
           await ctx.reply(helpMessage);
@@ -408,7 +408,7 @@ const botTelegram = () => {
         // call api get student info
         let tokenNLTB = ctx?.state?.tokenNLTB;
         let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
-  
+
         const res = await botTelegramService.checkSession(tokenNLTB, tokenLocalNLTB, mhv);
         console.log('check res', res.EM);
         let i = 1;
@@ -422,7 +422,7 @@ const botTelegram = () => {
               } else {
                 pr1 = await ctx.replyWithHTML(res?.EM + "\n" + row);
               }
-  
+
             } else if (i == res.DT.length) {
               pr1 = await ctx.replyWithHTML(row + '\n<i><b>Hãy liên hệ em Vy. Hy vọng em Vy sẽ cíu được phiên của các thầy 🏩🏩🏩</b></i>');
             }
@@ -449,9 +449,25 @@ const botTelegram = () => {
       isFetchingData = true;
       return;
     }
-   
+
   })
 
+  bot.hears("phiên", (ctx) => {
+    // Send response message
+    if (isFetchingData) {
+      isFetchingData = false;
+      ctx.reply(helpMessage)
+      isFetchingData = true;
+    }
+  })
+  bot.hears("/phiên", (ctx) => {
+    // Send response message
+    if (isFetchingData) {
+      isFetchingData = false;
+      ctx.reply(helpMessage)
+      isFetchingData = true;
+    }
+  })
 
   bot.launch();
 
