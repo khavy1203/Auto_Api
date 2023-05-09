@@ -3,6 +3,7 @@ const Entities = require('html-entities').AllHtmlEntities;
 const { message } = require('telegraf/filters');
 const Table = require('cli-table3');
 import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenInLocalNLTB } from '../middleware/tokenAction.js';
+const moment = require('moment');
 import botTelegramService from '../service/botTelegramService.js';
 require('dotenv').config();
 
@@ -237,7 +238,11 @@ const botTelegram = () => {
         }
         if (res.EC == 0 && res.DT.length > 0) {
           for (const e of res.DT) {
-            const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${e?.startTime ? e?.startTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian kết thúc:</i>  <b>${e?.endTime ? e?.endTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
+            const startTime = e?.startTime ? moment(e?.startTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss') : "";
+            const endTime = e?.endTime ? moment(e?.endTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss'):"";
+
+            const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${startTime}</b>\n<i>Thời gian kết thúc:</i>  <b>${endTime}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
+
             const pr1 = await ctx.replyWithHTML(row);
             const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
             console.log('check i++', i);
