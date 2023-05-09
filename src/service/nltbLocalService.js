@@ -38,7 +38,7 @@ const dowloadFilePDFFromNLTBLocal = async (tokenLocalNLTB = null, CCCD) => {
         .catch(error => {
             console.log('check error', error)
             return ({
-                EM: "Something wrong ...",
+                EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
                 EC: -2,
                 DT: "",
             });

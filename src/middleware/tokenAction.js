@@ -51,6 +51,7 @@ const checkToken = async (req, res) => {
   try {
     dotenv.config();
     const data = await nltbService.checkTokenService();
+    console.log("check data" , data)
     return ({
       EM: data.EM,
       EC: data.EC,
@@ -187,7 +188,7 @@ const checkTokenInLocalNLTB = async () => {
 			})
 			.catch(error => {
 				resolve({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: "",
 				});
@@ -242,7 +243,7 @@ const getTokenInLocalNLTB = async () => {
 			})
 			.catch(error => {
 				resolve({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: "",
 				});

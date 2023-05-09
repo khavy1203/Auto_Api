@@ -24,7 +24,7 @@ const apiTest = async (id) => {
 	} catch (e) {
 		console.log("error from service apiTest : >>>", e);
 		return {
-			EM: "Something wrong ...",
+			EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 			EC: "-2",
 			DT: "",
 		};
@@ -71,6 +71,14 @@ const getInfoStudent = async (token = null, name) => {
 			};
 
 			const req = https.request(options, (res) => {
+
+				if (res.statusCode != 200) {
+					reject({
+						EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
+						EC: -1,
+						DT: [],
+					});
+				};
 				// console.log(`statusCode: ${res.statusCode}`);
 				const contentType = res.headers['content-type'];
 				if (!/^application\/json/.test(contentType)) {
@@ -88,17 +96,24 @@ const getInfoStudent = async (token = null, name) => {
 				});
 
 				res.on('end', () => {
-
-					let data = [];
-					if (dataArr.length > 0) {
-						let dataBuffer = Buffer.concat(dataArr);
-						data = JSON.parse(dataBuffer.toString());
-						console.log('check data: ' + data);
-						data.forEach(obj => {
-							for (let key in obj) {
-								if (obj[key] == null || obj[key] == 0) delete obj[key];
-							}
-						})
+					let data = {};
+					try {
+						if (dataArr.length > 0) {
+							let dataBuffer = Buffer.concat(dataArr);
+							data = JSON.parse(dataBuffer.toString());
+							console.log('check data: ' + data);
+							data.forEach(obj => {
+								for (let key in obj) {
+									if (obj[key] == null || obj[key] == 0) delete obj[key];
+								}
+							})
+						}
+					} catch (e) {
+						reject({
+							EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
+							EC: -2,
+							DT: [],
+						});
 					}
 					resolve({
 						EM: "Get data successfully",
@@ -112,7 +127,7 @@ const getInfoStudent = async (token = null, name) => {
 			req.on('error', (error) => {
 				console.log("check error: " + error)
 				reject({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: []
 				});
@@ -123,7 +138,7 @@ const getInfoStudent = async (token = null, name) => {
 		});
 	} catch (error) {
 		reject({
-			EM: "error server from api ...",
+			EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 			EC: -2,
 			DT: [],
 		});
@@ -185,7 +200,7 @@ const getSessionStudent = async (token = null, name) => {
 
 				if (res.statusCode != 200) {
 					reject({
-						EM: "error server from api ...",
+						EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 						EC: -1,
 						DT: [],
 					});
@@ -208,7 +223,7 @@ const getSessionStudent = async (token = null, name) => {
 
 				res.on('end', () => {
 
-					let data = [];
+					let data = {};
 					try {
 						if (dataArr.length > 0) {
 							let dataBuffer = Buffer.concat(dataArr);
@@ -222,7 +237,7 @@ const getSessionStudent = async (token = null, name) => {
 						}
 					} catch (error) {
 						reject({
-							EM: "error server from api ...",
+							EM: "vui lòng thử lại sau ...",
 							EC: -1,
 							DT: [],
 						});
@@ -240,7 +255,7 @@ const getSessionStudent = async (token = null, name) => {
 			req.on('error', (error) => {
 				console.log("check error Phien: " + error)
 				reject({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: "",
 				});
@@ -251,7 +266,7 @@ const getSessionStudent = async (token = null, name) => {
 		});
 	} catch (error) {
 		reject({
-			EM: "error server from api ...",
+			EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 			EC: -2,
 			DT: [],
 		});
@@ -290,7 +305,7 @@ const getTokenService = async () => {
 				console.log(`statusCode: ${res.statusCode}`);
 				if (res.statusCode != 200) {
 					reject({
-						EM: "error server from api ...",
+						EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 						EC: -1,
 						DT: [],
 					});
@@ -319,7 +334,7 @@ const getTokenService = async () => {
 						}
 					} catch (error) {
 						reject({
-							EM: "error server from api ...",
+							EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 							EC: -1,
 							DT: [],
 						});
@@ -339,7 +354,7 @@ const getTokenService = async () => {
 			req.on('error', (error) => {
 				console.log("check error: " + error)
 				reject({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: "",
 				});
@@ -350,7 +365,7 @@ const getTokenService = async () => {
 		});
 	} catch (e) {
 		reject({
-			EM: "error server from api ...",
+			EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 			EC: -2,
 			DT: [],
 		});
@@ -383,7 +398,7 @@ const checkTokenService = async (req, res) => {
 				console.log(`statusCode: ${res.statusCode}`);
 				if (res.statusCode != 200) {
 					resolve({
-						EM: "error server from api ...",
+						EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 						EC: -1,
 						DT: [],
 					});
@@ -411,7 +426,7 @@ const checkTokenService = async (req, res) => {
 
 					} catch (error) {
 						reject({
-							EM: "Something wrong ...",
+							EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 							EC: -2,
 							DT: "",
 						});
@@ -429,7 +444,7 @@ const checkTokenService = async (req, res) => {
 			req.on('error', (error) => {
 				console.log("check error: " + error)
 				reject({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: "",
 				});
@@ -440,7 +455,7 @@ const checkTokenService = async (req, res) => {
 		});
 	} catch (e) {
 		reject({
-			EM: "error server from api ...",
+			EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 			EC: -2,
 			DT: [],
 		});
@@ -501,7 +516,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 
 				if (res.statusCode != 200) {
 					reject({
-						EM: "error server from api ...",
+						EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 						EC: -1,
 						DT: [],
 					});
@@ -537,7 +552,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 						}
 					} catch (error) {
 						reject({
-							EM: "error server from api ...",
+							EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 							EC: -1,
 							DT: [],
 						});
@@ -555,7 +570,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			req.on('error', (error) => {
 				console.log("check error Phien1: " + error)
 				reject({
-					EM: "Something wrong ...",
+					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 					EC: -2,
 					DT: "",
 				});
@@ -600,7 +615,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 				})
 				.catch(error => {
 					reject({
-						EM: "Something wrong ...",
+						EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
 						EC: -2,
 						DT: "",
 					});
@@ -608,31 +623,31 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 				});
 
 
-		}); 
-		const prAll= await Promise.all([pr1, pr2]).then((values) => {
+		});
+		const prAll = await Promise.all([pr1, pr2]).then((values) => {
 			const dtTongcuc = values[0]?.DT;
 			const dtLocal = values[1]?.DT;
 			console.log('check length', dtTongcuc.length, dtLocal.length)
 
 			const filteredArrayNotUpdate = dtLocal.filter(obj2 => !dtTongcuc.some(obj1 => obj1.sessionGuid == obj2.SessionId));
-			if(filteredArrayNotUpdate.length > 0){
+			if (filteredArrayNotUpdate.length > 0) {
 				return ({
 					EM: `<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và phát hiện ra ${filteredArrayNotUpdate.length} phiên bị mất. Hãy liên hệ cho em để được cíu 🐧🐧🐧</b> \n`,
 					EC: 0,
 					DT: filteredArrayNotUpdate,
 				});
-			}else{
+			} else {
 				return ({
 					EM: "<b>Rât vui là không có phiên nào bị mất. Nếu quý Thầy chắc chắn rằng mình chạy bị thiếu phiên thì chỉ có thể là dữ liệu chưa lên. Thầy vui lòng chạy ra xe mở máy DAT lên để máy tự động upload dữ liệu và Kiểm tra lại. Nếu kiểm tra vẫn không có thì chia buồn cùng thầy 🐧🐧🐧</b> \n",
 					EC: 1,
 					DT: [],
 				});
 			}
-			
+
 		}).catch((error) => {
 			console.log('check error: ', error)
 			return ({
-				EM: "error server from api ...",
+				EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 				EC: -2,
 				DT: [],
 			});
@@ -641,7 +656,7 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 
 	} catch (error) {
 		return ({
-			EM: "error server from api ...",
+			EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
 			EC: -2,
 			DT: [],
 		});

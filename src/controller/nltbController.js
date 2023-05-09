@@ -6,13 +6,20 @@ const fs = require('fs');
 const https = require('https');
 const dotenv = require('dotenv');
 
+async function sleep() {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, 5000);
+  });
+}
 
 const detailUser = async (req, res) => {
   try {
     // let name = req.params.name ;
     let name = "phạm xuân khả vy";
 
-    let data = await nltbService.apiGetInfoStudent(req?.token,name);
+    let data = await nltbService.apiGetInfoStudent(req?.token, name);
     console.log(data);
     res.status(200).json({
       EM: data.EM,
@@ -32,7 +39,7 @@ const apiGetInfoStudent = async (mhv) => {
   if (mhv)
     return new Promise((resolve, reject) => {
       dotenv.config();
-      
+
       const payload = {
         administrativeUnitId: 35,
         centerId: null,
@@ -68,8 +75,8 @@ const apiGetInfoStudent = async (mhv) => {
 
       const req = https.request(options, (res) => {
         console.log(`statusCode: ${res.statusCode}`);
-        if(res.statusCode != 200) reject({
-          EM: "Something wrong ...",
+        if (res.statusCode != 200) reject({
+          EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
           EC: -2,
           DT: [],
         });
@@ -79,16 +86,25 @@ const apiGetInfoStudent = async (mhv) => {
         });
 
         res.on('end', () => {
+          let data = [];
+          try {
+            let dataBuffer = Buffer.concat(dataArr);
+            data = JSON.parse(dataBuffer.toString());
 
-          let dataBuffer = Buffer.concat(dataArr);
-          let data = JSON.parse(dataBuffer.toString());
+            data.forEach(obj => {
+              for (let key in obj) {
+                if (obj[key] == null || obj[key] == 0) delete obj[key];
+              }
+            })
+          }
 
-          data.forEach(obj => {
-            for (let key in obj) {
-              if (obj[key] == null || obj[key] == 0) delete obj[key];
-            }
-          })
-
+          catch (e) {
+            resolve({
+              EM: "Get data fails",
+              EC: -2,
+              DT: "data",
+            });
+          }
           resolve({
             EM: "Get data successfully",
             EC: 0,
@@ -101,7 +117,7 @@ const apiGetInfoStudent = async (mhv) => {
       req.on('error', (error) => {
         console.log("check error: " + error)
         reject({
-          EM: "Something wrong ...",
+          EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
           EC: -2,
           DT: "",
         });
@@ -141,10 +157,18 @@ const fetchAPIonMhv = async (req, res) => {
       // Thực hiện fetch
       try {
         const pr2 = batch.map(async (row, rowIndex) => {
-          if (row[1]) {
-            let result = row[1];
+          console.log("check row", row)
+          if (row[0]) {
+            console.log("vooo ", row[0])
+            let result = row[0];
+            console.log("check result", result)
             if (result) {
-              const res = await apiGetInfoStudent(result);
+              let res = {};
+              let j = 0;
+              do {
+                res = await await apiGetInfoStudent(result);;
+                console.log("chạy lại " + j++ + " lần")
+              } while (res?.EC != 0)
               if (res.EC == 0 && res?.DT[0]?.studentName) {
                 const { studentName, studentId, studentDateOfBirth, driverLicenseLevelName, courseId, centerName, totalTime, totalDistance, moreTime, note, moreDistance, qualifiedNote } = res.DT[0];
                 // const nameArr = studentName.split(" ");
@@ -195,7 +219,7 @@ const fetchAPIonMhv = async (req, res) => {
     XLSX.utils.book_append_sheet(workbookWrite, worksheetWrite, 'ThongTinHocVien');
     XLSX.writeFile(workbookWrite, `ThongTinHocVien.xlsx`);
     saveAs('ThongTinHocVien.xlsx');
-
+    console.log("kết thúc")
     res.status(200).json({
       EM: 1,
       EC: 1,
@@ -241,8 +265,15 @@ const fetchAPIonMaKH = async (req, res) => {
         console.log('check result', result)
         if (result) {
           while (i < 20) {
+
             console.log('check i', i)
-            const res = await nltbService.apiGetInfoStudentOnSource(result, i);
+            let res = {};
+            let j = 0;
+            do {
+              await sleep();
+              res = await nltbService.apiGetInfoStudentOnSource(result, i);
+              console.log("chạy lại " + j++ + " lần")
+            } while (res?.EC != 0)
             console.log("check res?.DT?.length", res?.DT?.length)
             if (res.EC == 0 && res?.DT?.length > 0) {
               res?.DT.map((data) => {
@@ -307,7 +338,7 @@ const getToken = async (req, res) => {
       console.log("check envConfig", envConfig),
 
         // Thay đổi giá trị của biến API_SECRET
-      process.env.tokenNLTB = `${data?.DT?.id_token}`;
+        process.env.tokenNLTB = `${data?.DT?.id_token}`;
       envConfig.tokenNLTB = `${data?.DT?.id_token}`;
 
       const envContent = Object.entries(envConfig).map(([key, value]) => `${key}=${value}`).join('\n');

@@ -27,7 +27,7 @@ const apiTest = async (id) => {
     } catch (e) {
         console.log("error from service apiTest : >>>", e);
         return {
-            EM: "Something wrong ...",
+            EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
             EC: "-2",
             DT: "",
         };
@@ -114,7 +114,7 @@ const apiGetInfoStudent = async (token = null, Name) => {
         req.on('error', (error) => {
             console.log("check error: " + error)
             reject({
-                EM: "Something wrong ...",
+                EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
                 EC: -2,
                 DT: "",
             });
@@ -157,7 +157,7 @@ const getTokenService = async () => {
             console.log(`statusCode: ${res.statusCode}`);
             if (res.statusCode != 200) {
                 resolve({
-                    EM: "error server from api ...",
+                    EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
                     EC: -1,
                     DT: [],
                 });
@@ -186,7 +186,7 @@ const getTokenService = async () => {
         req.on('error', (error) => {
             console.log("check error: " + error)
             reject({
-                EM: "Something wrong ...",
+                EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
                 EC: -2,
                 DT: "",
             });
@@ -223,6 +223,7 @@ const checkTokenService = async (req, res) => {
             });
 
             res.on('end', () => {
+                
                 let dataBuffer = Buffer.concat(dataArr);
                 let data = JSON.parse(dataBuffer.toString());
 
@@ -239,7 +240,7 @@ const checkTokenService = async (req, res) => {
         req.on('error', (error) => {
             console.log("check error: " + error)
             reject({
-                EM: "Something wrong ...",
+                EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
                 EC: -2,
                 DT: "",
             });
@@ -296,15 +297,27 @@ const apiGetInfoStudentOnSource = async (maKH, page) => {
                 });
 
                 res.on('end', () => {
-                    let dataBuffer = Buffer.concat(dataArr);
-                    let data = JSON.parse(dataBuffer.toString());
+                    let data = [];
+                    try {
 
-                    data.forEach(obj => {
-                        for (let key in obj) {
-                            if (obj[key] == null || obj[key] == 0) delete obj[key];
-                        }
-                    })
 
+                        let dataBuffer = Buffer.concat(dataArr);
+                        data = JSON.parse(dataBuffer.toString());
+
+                        data.forEach(obj => {
+                            for (let key in obj) {
+                                if (obj[key] == null || obj[key] == 0) delete obj[key];
+                            }
+                        })
+
+                    } catch (e) {
+                        console.log("Get data fails on source : ", maKH)
+                        resolve({
+                            EM: "Get data fails on source : "+ maKH,
+                            EC: -2,
+                            DT: data,
+                        });
+                    }
                     resolve({
                         EM: "Get data successfully",
                         EC: 0,
@@ -317,7 +330,7 @@ const apiGetInfoStudentOnSource = async (maKH, page) => {
             req.on('error', (error) => {
                 console.log("check error: " + error)
                 reject({
-                    EM: "Something wrong ...",
+                    EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
                     EC: -2,
                     DT: "",
                 });
