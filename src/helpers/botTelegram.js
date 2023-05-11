@@ -425,7 +425,7 @@ const botTelegram = () => {
         // call api get student info
         let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
 
-        const res = await botTelegramService.inDat(tokenLocalNLTB, biensoxe , soThang);
+        const res = await botTelegramService.inDat(tokenLocalNLTB, biensoxe.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() , soThang);
         Promise.all([res]);
         console.log('check res', res);
         if (res?.EC == 0) {
