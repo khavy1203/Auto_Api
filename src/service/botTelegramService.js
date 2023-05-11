@@ -2,6 +2,10 @@ const dotenv = require('dotenv');
 const https = require('https');
 const axios = require('axios');
 require("dotenv").config();
+const { PDFDocument, rgb, StandardFonts, degrees, PDFPage } = require('pdf-lib');
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
 
 const apiTest = async (id) => {
 	try {
@@ -469,10 +473,10 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 			const yourBearToken = tokenTongCuc ? tokenTongCuc : process.env.tokenNLTB;
 			const today = new Date();
 			// Lấy ngày 15 ngày trước
-			const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+			const todaySum2 = (new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000));
 			const before15Days = new Date(todaySum2.getTime() - 30 * 24 * 60 * 60 * 1000);
 			// Format ngày dưới dạng ISO-8601
-			const before15DaysIoString = before15Days.toISOString();
+			const before15DaysIoString = before15Days.toISOString().slice(0, 10);
 			const todayIsoString = todaySum2.toISOString();
 			console.log("check todayIsoString dưới local", todayIsoString);
 			console.log("check before15DaysIoString dưới local", before15DaysIoString);
@@ -663,6 +667,145 @@ const checkSession = async (tokenTongCuc = null, tokenLocalNLTB = null, mhv) => 
 	}
 }
 
+let listXe = [];
+
+const inDat = async (tokenLocalNLTB = null, bienso, soThang = 1) => {
+	try {
+		return new Promise(async (resolve, reject) => {
+			const yourBearToken = tokenLocalNLTB ? tokenLocalNLTB : process.env.tokenLocalNLTB;
+
+			const getSessionStu = axios.create({
+				baseURL: process.env.hostnameLocal,
+				headers: {
+					'Authorization': `Bearer ${yourBearToken}`
+				},
+			})
+	
+			if (!listXe?.length) {
+	
+				const res = await getSessionStu.get(`/api/xe`)
+					.then(response => {
+						console.log("check response", response.status)
+						if (response.status != 200) {
+							return ({
+								EM: "Lỗi api ...",
+								EC: 1,
+								DT: "",
+							});
+						}
+						if (response?.data?.total_count) {
+							listXe = response?.data?.Data
+							return ({
+								EM: "Add Xe success",
+								EC: 0,
+								DT: "",
+							});
+						}
+					})
+					.catch(error => {
+						console.log("check error", error)
+						return ({
+							EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
+							EC: -2,
+							DT: "",
+						});
+					});
+				if (res.EC != 0) return res;
+			}
+			if (listXe.length > 0) {
+				const objXe = listXe.filter(obj => obj.BienSo == bienso);
+				if (objXe.length > 0) {
+					console.log('check Xe', objXe[0])
+	
+					const params = new URLSearchParams();
+					params.append('_idxe', objXe[0].ID);
+	
+					if (soThang == 1) {
+	
+						const today = new Date();
+						// Lấy ngày 15 ngày trước
+						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+						const before15Days = new Date(todaySum2.getTime() - 30 * 24 * 60 * 60 * 1000);
+						// Format ngày dưới dạng ISO-8601
+						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
+						const todayIsoString = todaySum2.toISOString().slice(0, 10);
+						console.log("check todayIsoString dưới local", todayIsoString);
+						console.log("check before15DaysIoString dưới local", before15DaysIoString);
+	
+						params.append('_ngaybatdau', before15DaysIoString);
+						params.append('_ngayketthuc', todayIsoString);
+					} else if (soThang == 2) {
+	
+						const today = new Date();
+						// Lấy ngày 15 ngày trước
+						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+						const before15Days = new Date(todaySum2.getTime() - 60 * 24 * 60 * 60 * 1000);
+						// Format ngày dưới dạng ISO-8601
+						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
+						const todayIsoString = todaySum2.toISOString().slice(0, 10);
+						console.log("check todayIsoString dưới local", todayIsoString);
+						console.log("check before15DaysIoString dưới local", before15DaysIoString);
+	
+						params.append('_ngaybatdau', before15DaysIoString);
+						params.append('_ngayketthuc', todayIsoString);
+					}
+	
+					await getSessionStu.get('/api/ReportCar/?' + params.toString(), { responseType: 'stream' })
+						.then(response => {
+							console.log('check response', response.status)
+							if (response.status != 200) {
+								reject ({
+									EM: "Lỗi api ...",
+									EC: 1,
+									DT: "",
+								});
+							}
+							console.log("check response.data", response.data)
+	
+							const pathFolderPdf = path.join(__dirname + '..\\..\\') + "filesPDF\\inDat\\" + bienso + ".pdf";
+							console.log("check path: " + pathFolderPdf)
+							const writeStream = fs.createWriteStream(pathFolderPdf);
+							response.data.pipe(writeStream);
+	
+							writeStream.on('finish', async () => {
+								console.log("check finish")
+								resolve ({
+									EM: "Get data successfully",
+									EC: 0,
+									DT: pathFolderPdf,
+								})
+							})
+	
+						})
+						.catch(error => {
+							reject ({
+								EM: "Lỗi api ...",
+								EC: -2,
+								DT: "",
+							});
+						});
+	
+				} else {
+					//không có xe
+					resolve ({
+						EM: "<b>Không có xe này</b>",
+						EC: 1,
+						DT: ""
+					});
+				}
+			}
+		})
+		
+
+	} catch (error) {
+		console.log('check error', error)
+		return ({
+			EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
+			EC: -2,
+			DT: "",
+		});
+	}
+}
 
 
 module.exports = {
@@ -671,4 +814,5 @@ module.exports = {
 	getTokenService,
 	checkTokenService,
 	checkSession,
+	inDat
 }
