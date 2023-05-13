@@ -41,11 +41,10 @@ const botTelegram = () => {
           }
         }
 
-        const { message } = ctx;
         let input = ctx.message.text.split(" ");
         const commandCheckPhien = input.shift();
 
-        if (commandCheckPhien === '/matphien') {
+        if (commandCheckPhien === '/matphien' || commandCheckPhien === '/indat' | commandCheckPhien === '/INDAT' | commandCheckPhien === '/MATPHIEN' ) {
 
           console.log('checcckkk input', input)
 
@@ -53,12 +52,6 @@ const botTelegram = () => {
           console.log("mhv", mhv);
           if (!mhv) {
             await ctx.reply(helpMessage);
-            isFetchingData = true;
-            return;
-          }
-          const regex = /^(?:\d{4}-\d{8}-\d{6}|\d{6})$/;
-          if (!regex.test(mhv)) {
-            await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại. Vui lòng lấy 6 số cuối của mã học viên');
             isFetchingData = true;
             return;
           }
@@ -70,47 +63,32 @@ const botTelegram = () => {
           } else {
             const getTokenLocalNLTB = await getTokenInLocalNLTB()
             if (getTokenLocalNLTB.EC == 0) {
-              ctx.state.tokenLocalNLTB = getTokenLocalNLTB.DT
+              ctx.state.tokenLocalNLTB = getTokenLocalNLTB.DT;
+
             } else {
               await ctx.reply('Lỗi lấy token ở localNLTB, vui lòng thử lại sau');
               isFetchingData = true;
               return;
             }
           }
-        }
-
-        if (commandCheckPhien === '/indat') {
-          const res = await checkTokenInLocalNLTB();
-          if (res.EC == 0) {
-            ctx.state.tokenLocalNLTB = process.env.tokenLocalNLTB;
-          } else {
-            const getTokenLocalNLTB = await getTokenInLocalNLTB()
-            if (getTokenLocalNLTB.EC == 0) {
-              ctx.state.tokenLocalNLTB = getTokenLocalNLTB.DT
-            } else {
-              await ctx.reply('Lỗi lấy token ở localNLTB, vui lòng thử lại sau');
+          await next(ctx);
+        } else {
+          const checkData = await checkTokenTelegram();
+          if (+checkData?.EC != 0 || !checkData?.DT?.length) {
+            const data = await getTokenTelegram();
+            console.log('check data in getToken', data)
+            if (+data.EC != 0 || !data?.DT?.id_token) {
+              await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
               isFetchingData = true;
               return;
+            } else {
+              ctx.state.tokenNLTB = data?.DT?.id_token;
             }
           }
+          ctx.state.tokenNLTB = process.env.tokenNLTB;
+          await next(ctx);
         }
 
-        const checkData = await checkTokenTelegram();
-        console.log("check data in check token", checkData);
-        if (+checkData?.EC != 0 || !checkData?.DT?.length) {
-          const data = await getTokenTelegram();
-          console.log('check data in getToken', data)
-          if (+data.EC != 0 || !data?.DT?.id_token) {
-            await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
-            isFetchingData = true;
-            return;
-          } else {
-            ctx.state.tokenNLTB = data?.DT?.id_token;
-          }
-        }
-        ctx.state.tokenNLTB = process.env.tokenNLTB;
-        console.log('check ctx in middleware', ctx)
-        await next(ctx);
       }
     } catch (e) {
       console.log("check error", e)
@@ -358,11 +336,9 @@ const botTelegram = () => {
           return;
         }
         // call api get student info
-        let tokenNLTB = ctx?.state?.tokenNLTB;
         let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
 
-        const res = await botTelegramService.checkSession(tokenNLTB, tokenLocalNLTB, mhv);
-        console.log('check res', res.EM);
+        const res = await botTelegramService.checkSession(tokenLocalNLTB, mhv);
         let i = 1;
         if (res?.EC == 0) {
           for (const e of res.DT) {
@@ -376,7 +352,7 @@ const botTelegram = () => {
               }
 
             } else if (i == res.DT.length) {
-              pr1 = await ctx.replyWithHTML(row + '\n<i><b>Hãy liên hệ em Vy. Hy vọng em Vy sẽ cíu được phiên của các thầy 🏩🏩🏩</b></i>');
+              pr1 = await ctx.replyWithHTML(row + '\n<i><b>Đã tiến hành giải cíu, hãy kiểm tra lại. Nếu phiên không lên được tổng cục thì em hết cách. 🏩🏩🏩</b></i>');
             }
             else {
               pr1 = await ctx.replyWithHTML(row);
@@ -404,6 +380,73 @@ const botTelegram = () => {
 
   })
 
+  bot.command('MATPHIEN', async (ctx) => {
+    try {
+      if (isFetchingData) {
+        isFetchingData = false;
+        console.log("DAT detected", ctx);
+        let input = ctx.message.text.split(" ");
+        input.shift();
+        console.log('check input', input)
+        const mhv = input[0]?.trim();
+        console.log("mhv", mhv);
+        if (!mhv) {
+          await ctx.reply(helpMessage);
+          isFetchingData = true;
+          return;
+        }
+        const regex = /^(?:\d{4}-\d{8}-\d{6}|\d{6})$/;
+        if (!regex.test(mhv)) {
+          await ctx.reply('Sai định dạng mã học viên, vui lòng nhập lại. Vui lòng lấy 6 số cuối của mã học viên');
+          isFetchingData = true;
+          return;
+        }
+        // call api get student info
+        let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
+
+        const res = await botTelegramService.checkSession(tokenLocalNLTB, mhv);
+        let i = 1;
+        if (res?.EC == 0) {
+          for (const e of res.DT) {
+            let pr1 = {};
+            const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i}</b></code>\n<i>Họ và Tên:</i> <b>${e?.HoTen}</b>\n<i>Mã học viên:</i> <b>${e?.MaDK}</b>\n<i>Khoá học:</i> <b>${e?.KhoaHoc}</b>\n<i>Đăng nhập:</i> <b>${e?.DangNhap}</b>\n<i>Đăng xuất:</i> <b>${e?.DangXuat}</b>\n<i>Tổng thời gian:</i> <b>${e?.TongTG}</b>\n<i>Tổng quãng đường:</i> <b>${e?.TongQD}</b>\n`;
+            if (i == 1) {
+              if (res.DT.length == 1) {
+                pr1 = await ctx.replyWithHTML(res?.EM + "\n" + row + '\n<i><b>Hãy liên hệ em Vy. Hy vọng em Vy sẽ cíu được phiên của các thầy 🏩🏩🏩</b></i>');
+              } else {
+                pr1 = await ctx.replyWithHTML(res?.EM + "\n" + row);
+              }
+
+            } else if (i == res.DT.length) {
+              pr1 = await ctx.replyWithHTML(row + '\n<i><b>Đã tiến hành giải cíu, hãy kiểm tra lại. Nếu phiên không lên được tổng cục thì em hết cách. 🏩🏩🏩</b></i>');
+            }
+            else {
+              pr1 = await ctx.replyWithHTML(row);
+            }
+            const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log('check i++', i);
+            i++;
+            await Promise.all([pr1, pr2]);
+          };
+          isFetchingData = true;
+          return;
+        } else {
+          await ctx.replyWithHTML(res.EM);
+          isFetchingData = true;
+          return;
+        }
+      }
+      isFetchingData = true;
+      return;
+    } catch (error) {
+      await ctx.replyWithHTML("Vui lòng thử lại sau");
+      isFetchingData = true;
+      return;
+    }
+
+  })
+
+
   bot.command('indat', async (ctx) => {
     try {
       if (isFetchingData) {
@@ -425,7 +468,7 @@ const botTelegram = () => {
         // call api get student info
         let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
 
-        const res = await botTelegramService.inDat(tokenLocalNLTB, biensoxe.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() , soThang);
+        const res = await botTelegramService.inDat(tokenLocalNLTB, biensoxe.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(), soThang);
         Promise.all([res]);
         console.log('check res', res);
         if (res?.EC == 0) {
@@ -441,7 +484,70 @@ const botTelegram = () => {
               }
               console.log('File deleted successfully');
             });
-            
+
+            isFetchingData = true;
+            return;
+          } else {
+            console.log("file KHông tồn tại")
+            ctx.reply("File không tồn tại");
+            isFetchingData = true;
+            return;
+          }
+        } else {
+          await ctx.replyWithHTML(res?.EM);
+          isFetchingData = true;
+          return;
+        }
+      }
+      isFetchingData = true;
+      return;
+    } catch (error) {
+      console.log("check error", error)
+      await ctx.replyWithHTML("Vui lòng thử lại sau");
+      isFetchingData = true;
+      return;
+    }
+
+  })
+
+  bot.command('INDAT', async (ctx) => {
+    try {
+      if (isFetchingData) {
+        isFetchingData = false;
+        console.log("DAT detected", ctx);
+        let input = ctx.message.text.split(" ");
+        input.shift();
+        console.log('check input', input)
+        const biensoxe = input[0]?.trim();
+        const soThang = input[1]?.trim();
+        console.log("biensoxe", biensoxe);
+        console.log("soThang", soThang);
+
+        if (!biensoxe) {
+          await ctx.reply(helpMessage);
+          isFetchingData = true;
+          return;
+        }
+        // call api get student info
+        let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
+
+        const res = await botTelegramService.inDat(tokenLocalNLTB, biensoxe.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(), soThang);
+        Promise.all([res]);
+        console.log('check res', res);
+        if (res?.EC == 0) {
+          const pdfFilePath = res.DT;
+          const pdfBuffer = fs.readFileSync(pdfFilePath);;
+          if (fs.existsSync(pdfFilePath)) {
+            console.log("file tồn tại")
+            await ctx.replyWithDocument({ source: pdfBuffer, filename: 'inDat.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+            fs.unlink(pdfFilePath, (err) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
+              console.log('File deleted successfully');
+            });
+
             isFetchingData = true;
             return;
           } else {
