@@ -4,7 +4,7 @@ const fileUpload = require('express-fileupload');
 import configViewEngine from "./config/viewEngine";
 import apiRoutes from "./routes/api";
 import botTelegram from './helpers/botTelegram';
-
+import tx from './helpers/tx';
 
 require('dotenv').config();
 
@@ -17,8 +17,8 @@ app.use(fileUpload());
 
 configViewEngine(app);
 apiRoutes(app);
-botTelegram();
-
+// botTelegram();
+tx();
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

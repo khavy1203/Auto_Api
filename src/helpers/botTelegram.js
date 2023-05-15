@@ -42,11 +42,9 @@ const botTelegram = () => {
         }
 
         let input = ctx.message.text.split(" ");
-        const commandCheckPhien = input.shift();
+        const commandCheck = input.shift();
 
-        if (commandCheckPhien === '/matphien' || commandCheckPhien === '/indat' | commandCheckPhien === '/INDAT' | commandCheckPhien === '/MATPHIEN' ) {
-
-          console.log('checcckkk input', input)
+        if (commandCheck === '/matphien' || commandCheck === '/indat' | commandCheck === '/INDAT' | commandCheck === '/MATPHIEN' ) {
 
           const mhv = input[0]?.trim();
           console.log("mhv", mhv);

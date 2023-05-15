@@ -494,8 +494,8 @@ const checkSession = async (tokenLocalNLTB = null, mhv) => {
 
 			getSessionStu.get(process.env.hostnameLocal + '/api/HanhTrinh?' + params.toString())
 				.then(async response => {
-					if(response.status!=200){
-						resolve ({
+					if (response.status != 200) {
+						resolve({
 							EM: "Lỗi api vui lòng thử lại sau ...",
 							EC: 2,
 							DT: "",
@@ -509,20 +509,20 @@ const checkSession = async (tokenLocalNLTB = null, mhv) => {
 							total_count: filteredArrayNotUpdate.length
 						}
 						await getSessionStu.post(process.env.hostnameLocal + '/api/HanhTrinh', payload)
-							.then(response => {	
+							.then(response => {
 								console.log("check response cập nhật lại các phiên mất", response?.status)
 								console.log("check response data cập nhật lại các phiên mất", response?.data)
 
 								return response.status;
 							})
 
-						resolve ({
+						resolve({
 							EM: `<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và phát hiện ra ${filteredArrayNotUpdate.length} phiên bị mất. 🐧🐧🐧</b> \n`,
 							EC: 0,
 							DT: filteredArrayNotUpdate,
 						});
 					} else {
-						resolve ({
+						resolve({
 							EM: "<b>Rât vui là không có phiên nào bị mất. Nếu quý Thầy chắc chắn rằng mình chạy bị thiếu phiên thì chỉ có thể là dữ liệu chưa lên. Thầy vui lòng chạy ra xe mở máy DAT lên để máy tự động upload dữ liệu và Kiểm tra lại. Nếu kiểm tra vẫn không có thì chia buồn cùng thầy 🐧🐧🐧</b> \n",
 							EC: 1,
 							DT: [],
@@ -622,6 +622,21 @@ const inDat = async (tokenLocalNLTB = null, bienso, soThang = 1) => {
 						// Lấy ngày 15 ngày trước
 						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
 						const before15Days = new Date(todaySum2.getTime() - 60 * 24 * 60 * 60 * 1000);
+						// Format ngày dưới dạng ISO-8601
+						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
+						const todayIsoString = todaySum2.toISOString().slice(0, 10);
+						console.log("check todayIsoString dưới local", todayIsoString);
+						console.log("check before15DaysIoString dưới local", before15DaysIoString);
+
+						params.append('_ngaybatdau', before15DaysIoString);
+						params.append('_ngayketthuc', todayIsoString);
+
+					} else if (soThang == 3) {
+
+						const today = new Date();
+						// Lấy ngày 15 ngày trước
+						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+						const before15Days = new Date(todaySum2.getTime() - 90 * 24 * 60 * 60 * 1000);
 						// Format ngày dưới dạng ISO-8601
 						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
 						const todayIsoString = todaySum2.toISOString().slice(0, 10);
