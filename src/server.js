@@ -17,8 +17,8 @@ app.use(fileUpload());
 
 configViewEngine(app);
 apiRoutes(app);
-// botTelegram();
-tx();
+botTelegram();
+// tx();
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
