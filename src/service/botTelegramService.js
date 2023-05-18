@@ -504,10 +504,12 @@ const checkSession = async (tokenLocalNLTB = null, mhv) => {
 					const dtLocal = response?.data?.Data;
 					const filteredArrayNotUpdate = dtLocal.filter(obj => !obj.IsSend);
 					if (filteredArrayNotUpdate.length > 0) {
+
 						const payload = {
 							"Data": filteredArrayNotUpdate,
-							total_count: filteredArrayNotUpdate.length
+							"total_count": filteredArrayNotUpdate.length
 						}
+						console.log("check playload", payload)
 						await getSessionStu.post(process.env.hostnameLocal + '/api/HanhTrinh', payload)
 							.then(response => {
 								console.log("check response cập nhật lại các phiên mất", response?.status)
@@ -515,7 +517,6 @@ const checkSession = async (tokenLocalNLTB = null, mhv) => {
 
 								return response.status;
 							})
-
 						resolve({
 							EM: `<b>Hãy trao cho em huy chương 🏅 sau khi em đã tìm kiếm cật lực và phát hiện ra ${filteredArrayNotUpdate.length} phiên bị mất. 🐧🐧🐧</b> \n`,
 							EC: 0,

@@ -2,8 +2,8 @@ const path = require('path');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const dotenv = require('dotenv');
-const printer = require('pdf-to-printer');
-const { PDFDocument, rgb, StandardFonts, degrees, PDFPage } = require('pdf-lib');
+const { PDFDocument} = require('pdf-lib');
+const { exec } = require('child_process');
 const nltbLocalService = require('../service/nltbLocalService');
 
 async function sleep() {
@@ -40,60 +40,50 @@ const nltbLocalInDat = async (req, res) => {
                     let k = 0;
 
                     do {
-                        await sleep();
-                        let mhv = {} ; 
+                        let mhv = {};
                         do {
                             mhv = await nltbLocalService.getMHVforCCCD(req?.token, result)
                             console.log("số lần lặp tìm kiếm CCCD", k++)
-                        }while(mhv.EC != 0);
-                        
+                        } while (mhv.EC != 0);
+
                         res = await nltbLocalService.dowloadFilePDFFromNLTBLocal(req?.token, mhv.DT);
                         console.log("số lần lặp mhv", j++)
                     } while (res.EC != 0)
 
-                    const pathFolderPdf = path.join(__dirname + '../../') + "filesPDF/inDat/" + result + ".pdf";
-                    console.log("check path: " + pathFolderPdf)
-                    const writeStream = fs.createWriteStream(pathFolderPdf);
-                    res.DT.pipe(writeStream);
+                    const pathFolderPdf = res.DT;
+                    let existingPdfBytes = fs.readFileSync(pathFolderPdf);
+                    let pdfDoc = await PDFDocument.load(existingPdfBytes);
 
-                    writeStream.on('finish', async () => {
+                    const pages = pdfDoc.getPages();
+                    for (let i = 0; i < pages.length; i++) {
+                        let page = pages[i];
 
-                        let existingPdfBytes = fs.readFileSync(pathFolderPdf);
-                        let pdfDoc = await PDFDocument.load(existingPdfBytes);
+                        let { width, height } = page.getSize();
+                        let fontSize = 15;
+                        let text = count;
+                        let xPos = width - 20;
+                        let yPos = height - 20;
+                        page.drawText(text.toString(), { x: xPos, y: yPos, size: fontSize });
+                        // Cập nhật lại vị trí các trang để in 2 mặt
 
-                        const pages = pdfDoc.getPages();
-                        for (let i = 0; i < pages.length; i++) {
-                            let page = pages[i];
+                    }
 
-                            let { width, height } = page.getSize();
-                            let fontSize = 20;
-                            let text = count;
-                            let xPos = width - 50;
-                            let yPos = height - 50;
-                            page.drawText(text.toString(), { x: xPos, y: yPos, size: fontSize });
-                            // Cập nhật lại vị trí các trang để in 2 mặt
-                           
-                        }
-
-                        let modifiedPdfBytes = await pdfDoc.save();
-                        fs.writeFileSync(pathFolderPdf, modifiedPdfBytes);
-
-                        // In file PDF ra máy in có địa chỉ IP là 192.168.10.94
-                        const inDat = await printer.print(pathFolderPdf, {
-                            printer: "TOSHIBA 657",
-                            options: ['-o sides=two-sided-long-edge']
-                        }, function (err) {
-                            if (err) {
-                                console.error(err);
-                            } else {
-                                console.log('In thành công');
-                            }
+                    let modifiedPdfBytes = await pdfDoc.save();
+                    fs.writeFileSync(pathFolderPdf, modifiedPdfBytes);
+                    const printCommand = `"C:\\Users\\KHA VY\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe" -print-to-default -print-settings "duplex,long-edge" "${pathFolderPdf}"`
+                    exec(printCommand, (error, stdout, stderr) => {
+                        if (error) {
+                          console.error('Lỗi khi in file:', error);
+                          res.status(200).json({
+                            EM: "Lỗi khi in file, vui lòng tiếp tục in lại ...",
+                            EC: 1,
+                            DT: count,
                         });
-
-                        Promise.all([inDat]);
-                        console.log("Số thứ tự", count)
-                        count++;
-                    });
+                        }
+                        console.log('File PDF đã được in thành công.');
+                      });
+                    console.log("Số thứ tự", count)
+                    count++;
 
                 }
             }

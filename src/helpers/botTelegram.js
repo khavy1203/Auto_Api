@@ -1,7 +1,4 @@
 const { Telegraf, Extra } = require('telegraf');
-const Entities = require('html-entities').AllHtmlEntities;
-const { message } = require('telegraf/filters');
-const Table = require('cli-table3');
 import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenInLocalNLTB } from '../middleware/tokenAction.js';
 const moment = require('moment');
 const path = require('path');
@@ -103,6 +100,7 @@ const botTelegram = () => {
       isFetchingData = true;
       return;
     }
+    isFetchingData = true;
     return;
   })
 
@@ -570,6 +568,69 @@ const botTelegram = () => {
     }
 
   })
+
+  // bot.command('dayhocvien', async (ctx) => {
+  //   try {
+  //     if (isFetchingData) {
+  //       isFetchingData = false;
+  //       console.log("DAT detected", ctx);
+  //       let input = ctx.message.text.split(" ");
+  //       input.shift();
+  //       console.log('check input', input)
+  //       const biensoxe = input[1]?.trim();
+  //       const nameStudent = input[0]?.trim();
+  //       console.log("biensoxe", biensoxe);
+  //       console.log("soThang", soThang);
+
+  //       if (!biensoxe) {
+  //         await ctx.reply(helpMessage);
+  //         isFetchingData = true;
+  //         return;
+  //       }
+  //       // call api get student info
+  //       let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
+
+  //       const res = await botTelegramService.inDat(tokenLocalNLTB, biensoxe.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(), soThang);
+  //       Promise.all([res]);
+  //       console.log('check res', res);
+  //       if (res?.EC == 0) {
+  //         const pdfFilePath = res.DT;
+  //         const pdfBuffer = fs.readFileSync(pdfFilePath);;
+  //         if (fs.existsSync(pdfFilePath)) {
+  //           console.log("file tồn tại")
+  //           await ctx.replyWithDocument({ source: pdfBuffer, filename: 'inDat.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+  //           fs.unlink(pdfFilePath, (err) => {
+  //             if (err) {
+  //               console.error(err);
+  //               return;
+  //             }
+  //             console.log('File deleted successfully');
+  //           });
+
+  //           isFetchingData = true;
+  //           return;
+  //         } else {
+  //           console.log("file KHông tồn tại")
+  //           ctx.reply("File không tồn tại");
+  //           isFetchingData = true;
+  //           return;
+  //         }
+  //       } else {
+  //         await ctx.replyWithHTML(res?.EM);
+  //         isFetchingData = true;
+  //         return;
+  //       }
+  //     }
+  //     isFetchingData = true;
+  //     return;
+  //   } catch (error) {
+  //     console.log("check error", error)
+  //     await ctx.replyWithHTML("Vui lòng thử lại sau");
+  //     isFetchingData = true;
+  //     return;
+  //   }
+
+  // })
 
   bot.hears("phiên", (ctx) => {
     // Send response message
