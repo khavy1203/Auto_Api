@@ -41,6 +41,7 @@ const botTelegram = () => {
     // ctx.reply('U use bot');
     try {
       console.log("bot đã hoạt động")
+      console.log("check ctx chat id", ctx.chat.id)
       if (isFetchingData) {
         // if (ctx.chat.id != process.env.id_groupNLTB) {
         //   await ctx.replyWithHTML('Vui lòng không truy vấn dữ liệu hoặc nhắn riêng trên tin nhắn riêng của bot, vui lòng truy vấn trên group chính thức : <a href="https://t.me/+NR_DldQ80ak0MTRl">DAT_NLTB</a> . Muốn truy vấn riêng trên bot, vui lòng nhắn tin trực tiếp cho em Vy (0987980417) để được cấp quyền nhắn tin riêng trên bot 🤖🤖', { disable_web_page_preview: true })
@@ -590,6 +591,11 @@ const botTelegram = () => {
     try {
       if (isFetchingData) {
         isFetchingData = false;
+        if(ctx.chat.id != process.env.id_admin){
+          await ctx.reply("Chỉ có admin mới được phép dùng tính năng này, vui lòng nhắn tin riêng cho admin để xác nhận");
+          isFetchingData = true;
+          return;
+        }
         console.log("DAT detected", ctx);
         let input = ctx.message.text.split(" ");
         input.shift();
