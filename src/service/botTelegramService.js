@@ -551,6 +551,7 @@ const checkSession = async (tokenLocalNLTB = null, mhv) => {
 }
 
 let listXe = [];
+let listKhoa = [];
 
 const inDat = async (tokenLocalNLTB = null, bienso, soThang = 1) => {
 	try {
@@ -593,7 +594,11 @@ const inDat = async (tokenLocalNLTB = null, bienso, soThang = 1) => {
 							DT: "",
 						});
 					});
-				if (res.EC != 0) return res;
+				if (res.EC != 0) resolve({
+					EM: "Lỗi truy vấn lấy dữ liệu từ xe",
+					EC: 1,
+					DT: "",
+				});
 			}
 			if (listXe.length > 0) {
 				const objXe = listXe.filter(obj => obj.BienSo == bienso);
@@ -705,12 +710,240 @@ const inDat = async (tokenLocalNLTB = null, bienso, soThang = 1) => {
 	}
 }
 
+const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
+	try {
+		return new Promise(async (resolve, reject) => {
+			const yourBearToken = tokenLocalNLTB ? tokenLocalNLTB : process.env.tokenLocalNLTB;
+
+			const getSessionStu = axios.create({
+				baseURL: process.env.hostnameLocal,
+				headers: {
+					'Authorization': `Bearer ${yourBearToken}`
+				},
+			})
+
+			if (!listXe?.length || !listKhoa?.length) {
+
+				const res1 = getSessionStu.get(`/api/xe`);
+
+				const res2 = getSessionStu.get(`/api/course`);
+
+				const pr = await Promise.all([res1, res2])
+					.then(response => {
+						if (response[0].status != 200 || response[1].status != 200) {
+							return ({
+								EM: "Lỗi api ...",
+								EC: -2,
+								DT: "",
+							});
+						}
+						console.log("check response[0]?.data?.total_count", response[0]?.data?.total_count)
+						console.log("response[1]?.data?.total_count", response[1]?.data?.x_total_count)
+
+						if (response[0]?.data?.total_count && response[1]?.data?.x_total_count) {
+							listXe = response[0]?.data?.Data;
+							listKhoa = response[1]?.data?.Data;
+							return ({
+								EM: "Add success",
+								EC: 0,
+								DT: "",
+							});
+						} else {
+							return ({
+								EM: "Lỗi api ...",
+								EC: 1,
+								DT: "",
+							});
+						}
+
+					})
+					.catch(error => {
+						console.log("check error", error)
+						return ({
+							EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
+							EC: -2,
+							DT: "",
+						});
+					});
+				console.log("check pr", pr)
+				if (pr.EC != 0) resolve({
+					EM: `<b>Lỗi truy vấn lấy khoá và xe</b>`,
+					EC: 1,
+					DT: ""
+				});
+			}
+			console.log("check list xe", listXe.length)
+			console.log("check list khoa", listKhoa.length)
+			if (listXe.length > 0 && listKhoa.length > 0) {
+				const objXe = listXe.filter(obj => obj.BienSo == bienso?.trim());
+				const objSource = listKhoa.filter(obj => obj.Ten.includes(khoa));
+				console.log("check objXe", objXe)
+				console.log("check objSource", objSource)
+
+				if (!objSource.length) resolve({
+					EM: `<b>Không có Khoá ${khoa} này</b>`,
+					EC: 1,
+					DT: ""
+				});
+				if (!objXe.length) resolve({
+					EM: `<b>Không có Xe ${bienso} này</b>`,
+					EC: 1,
+					DT: ""
+				});
+				if (objSource.length && objXe.length) {
+					console.log('check Xe', objXe)
+					console.log('check Khoá', objSource)
+
+					const params = new URLSearchParams();
+					params.append('dsBienSo', objXe[0]?.BienSo);
+					params.append('idkhoahoc', objSource[0]?.ID);
+					params.append('dsMaDk', "");
+
+					await getSessionStu.get('/api/xe/?' + params.toString())
+						.then(response => {
+							console.log('check response đẩy khoá', response.status)
+							if (response.status != 200) {
+								reject({
+									EM: "Lỗi api ...",
+									EC: 1,
+									DT: "",
+								});
+							}
+							if (response?.data == true) {
+								resolve({
+									EM: `<b>Đẩy khoá học ${objSource[0].Ten} xuống xe ${objXe[0].BienSo} thành công</b>`,
+									EC: 0,
+									DT: "",
+								})
+							} else {
+								resolve({
+									EM: `<b>Đẩy khoá học ${objSource[0].Ten} xuống xe ${objXe[0].BienSo} thất bại</b>`,
+									EC: 1,
+									DT: "",
+								})
+							}
+
+						})
+						.catch(error => {
+							reject({
+								EM: "Lỗi api ...",
+								EC: -2,
+								DT: "",
+							});
+						});
+				}
+
+			}
+		});
+
+
+	} catch (error) {
+		console.log('check error', error)
+		return ({
+			EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
+			EC: -2,
+			DT: "",
+		});
+	}
+}
+
+const searchSource = async (tokenLocalNLTB = null, khoa) => {
+	try {
+		return new Promise(async (resolve, reject) => {
+			const yourBearToken = tokenLocalNLTB ? tokenLocalNLTB : process.env.tokenLocalNLTB;
+
+			const getSessionStu = axios.create({
+				baseURL: process.env.hostnameLocal,
+				headers: {
+					'Authorization': `Bearer ${yourBearToken}`
+				},
+			})
+
+			if (!listKhoa?.length) {
+
+				const res2 = getSessionStu.get(`/api/course`);
+
+				const pr = await Promise.all([res2])
+					.then(response => {
+						if (response[0].status != 200) {
+							return ({
+								EM: "Lỗi api ...",
+								EC: -2,
+								DT: "",
+							});
+						}
+						console.log("check response[0]?.data?.total_count", response[0]?.data?.x_total_count)
+
+						if (response[0]?.data?.x_total_count) {
+							listKhoa = response[0]?.data?.Data;
+							return ({
+								EM: "Add success",
+								EC: 0,
+								DT: "",
+							});
+						} else {
+							return ({
+								EM: "Lỗi api ...",
+								EC: 1,
+								DT: "",
+							});
+						}
+
+					})
+					.catch(error => {
+						console.log("check error", error)
+						return ({
+							EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
+							EC: -2,
+							DT: "",
+						});
+					});
+				console.log("check pr", pr)
+				if (pr.EC != 0) resolve({
+					EM: `<b>Lỗi truy vấn lấy khoá</b>`,
+					EC: 1,
+					DT: ""
+				});
+			}
+			console.log("check list khoa", listKhoa.length)
+			if (listKhoa.length > 0) {
+				const objSource = listKhoa.filter(obj => obj.Ten.includes(khoa));
+				console.log("check objSource", objSource)
+
+				if (!objSource.length) resolve({
+					EM: `<b>Không có Khoá ${khoa} này</b>`,
+					EC: 1,
+					DT: ""
+				});
+				const lstObjSource = objSource.map(e => e.Ten).join(', ');
+				resolve({
+					EM: `<b>Tìm thấy danh sách khoá</b> \n ${lstObjSource}`,
+					EC: 0,
+					DT: objSource
+				});
+
+			}
+		});
+
+
+	} catch (error) {
+		console.log('check error', error)
+		return ({
+			EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
+			EC: -2,
+			DT: "",
+		});
+	}
+}
+
 
 module.exports = {
+	pushSource,
 	getInfoStudent,
 	getSessionStudent,
 	getTokenService,
 	checkTokenService,
 	checkSession,
-	inDat
+	inDat,
+	searchSource
 }
