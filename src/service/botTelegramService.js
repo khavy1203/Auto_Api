@@ -607,51 +607,18 @@ const inDat = async (tokenLocalNLTB = null, bienso, soThang = 1) => {
 
 					const params = new URLSearchParams();
 					params.append('_idxe', objXe[0].ID);
+					const today = new Date();
+					// Lấy ngày 15 ngày trước
+					const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+					const before15Days = new Date(todaySum2.getTime() - soThang * 30 * 24 * 60 * 60 * 1000);
+					// Format ngày dưới dạng ISO-8601
+					const before15DaysIoString = before15Days.toISOString().slice(0, 10);
+					const todayIsoString = todaySum2.toISOString().slice(0, 10);
+					console.log("check todayIsoString dưới local", todayIsoString);
+					console.log("check before15DaysIoString dưới local", before15DaysIoString);
 
-					if (soThang == 1) {
-
-						const today = new Date();
-						// Lấy ngày 15 ngày trước
-						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
-						const before15Days = new Date(todaySum2.getTime() - 30 * 24 * 60 * 60 * 1000);
-						// Format ngày dưới dạng ISO-8601
-						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
-						const todayIsoString = todaySum2.toISOString().slice(0, 10);
-						console.log("check todayIsoString dưới local", todayIsoString);
-						console.log("check before15DaysIoString dưới local", before15DaysIoString);
-
-						params.append('_ngaybatdau', before15DaysIoString);
-						params.append('_ngayketthuc', todayIsoString);
-					} else if (soThang == 2) {
-
-						const today = new Date();
-						// Lấy ngày 15 ngày trước
-						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
-						const before15Days = new Date(todaySum2.getTime() - 60 * 24 * 60 * 60 * 1000);
-						// Format ngày dưới dạng ISO-8601
-						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
-						const todayIsoString = todaySum2.toISOString().slice(0, 10);
-						console.log("check todayIsoString dưới local", todayIsoString);
-						console.log("check before15DaysIoString dưới local", before15DaysIoString);
-
-						params.append('_ngaybatdau', before15DaysIoString);
-						params.append('_ngayketthuc', todayIsoString);
-
-					} else if (soThang == 3) {
-
-						const today = new Date();
-						// Lấy ngày 15 ngày trước
-						const todaySum2 = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
-						const before15Days = new Date(todaySum2.getTime() - 90 * 24 * 60 * 60 * 1000);
-						// Format ngày dưới dạng ISO-8601
-						const before15DaysIoString = before15Days.toISOString().slice(0, 10);
-						const todayIsoString = todaySum2.toISOString().slice(0, 10);
-						console.log("check todayIsoString dưới local", todayIsoString);
-						console.log("check before15DaysIoString dưới local", before15DaysIoString);
-
-						params.append('_ngaybatdau', before15DaysIoString);
-						params.append('_ngayketthuc', todayIsoString);
-					}
+					params.append('_ngaybatdau', before15DaysIoString);
+					params.append('_ngayketthuc', todayIsoString);
 
 					await getSessionStu.get('/api/ReportCar/?' + params.toString(), { responseType: 'stream' })
 						.then(response => {

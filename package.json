@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error:no test specified\" && exit 1",
-    "start": "babel-node src/server.js",
+    "start": "  src/server.js",
     "dev": "nodemon --exec babel-node src/server.js",
     "stop": "pm2 stop auto",
     "restart": "pm2 restart auto"
