@@ -12,8 +12,8 @@ const botTelegram = () => {
 
   const helpMessage = `
     Các cú pháp sử dụng bot ( CÁC CÚ PHÁP VUI LÒNG KHÔNG DẤU ) : 
-      /dat tenhocvien hoặc mãhọcviên (Kiểm tra DAT học viên)
-      /phien tenhocvien hoặc mãhọcviên (Kiểm tra Phiên học viên)
+      /dat tenhocvien hoặc mãhọcviên (Kiểm tra DAT học viên) Ví dụ : /dat 123456 hoặc /dat Nguyễn Văn A (trong đó 123456 là 6 số cuối của mã số học viên)
+      /phien tenhocvien hoặc mãhọcviên (Kiểm tra Phiên học viên) Ví dụ : /phien 123456 hoặc /phien Nguyễn Văn A (trong đó 123456 là 6 số cuối của mã số học viên)
       /matphien mãhọcviên ( Nhằm kiếm tra bị "MẤT PHIÊN" - đối chiếu dữ liệu phiên giữa máy DAT và trên Tổng Cục, để xử lý cho các thầy có thể tìm kiếm được phiên bị mất, hoặc phiên load quá lâu trên 12h)
       /indat biểnsốxe (Làm giấy phép tập lái. Ví dụ : /indat 77A12345 mặt định là 1 tháng, muốn lấy dữ liệu trong 2,3 thì cách ra và thêm số 2 hoặc 3 tháng . Ví dụ : /indat 77A12345 2 )
       /timkhoa tênkhoá (Kiểm tra tên khoá học để đẩy xuống xe cho chính xác. Ví dụ: /timkhoa 127 )
@@ -69,7 +69,7 @@ const botTelegram = () => {
 
           let input = ctx.message.text.split(" ");
           const commandCheck = input.shift();
-          
+
           const checkNull = input[0]?.trim();
           console.log("check giá trị vào", checkNull);
           if (!checkNull) {
