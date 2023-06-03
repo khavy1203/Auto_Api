@@ -20,6 +20,7 @@ const botTelegram = () => {
       /daykhoa tênkhoá biểnsốxe (Đẩy khoá học xuống xe. Ví dụ đẩy khoá 127 xuống xe 77A12345: /daykhoa 127 77A12345 )
     `;
 
+
   let isFetchingData = true;
 
   const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -29,7 +30,13 @@ const botTelegram = () => {
     '/daykhoa',
     '/timkhoa'
   ]
-
+  async function sleep() {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, 2000);
+    });
+  }
 
   try {
     function isNumberString(str) {
@@ -151,9 +158,10 @@ const botTelegram = () => {
             for (const e of res.DT) {
               const row = `<i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Ngày sinh:</i> <b>${e?.studentDateOfBirth}</b> \n<i>Hạng đào tạo:</i> <b>${e?.driverLicenseLevelName}</b> \n<i>Mã khoá học:</i> <b>${e?.courseId}</b> \n<i>Thời gian đào tạo:</i> <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b> \n<i>Quãng đường đào tạo:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b> \n<i>Thời gian thiếu:</i>  <b>${e?.moreTime ? e?.moreTime + " giờ" : ""}</b> \n<i>Quãng đường thiếu:</i>  <b>${e?.moreDistance ? e?.moreDistance + " Km" : ""}</b> \n<i>Ghi chú:</i>  <b>${e?.note || ""}</b>`;
               const pr1 = await ctx.replyWithHTML(row);
-              const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
+              const pr2 = await sleep();
               console.log('check i++', i);
               await Promise.all([pr1, pr2]);
+              console.log('check i++', i);
             };
             isFetchingData = true;
             return;
@@ -198,13 +206,14 @@ const botTelegram = () => {
             return;
           }
           let i = 1;
-          if (res.EC == 0 && res.DT.length > 0) {
+          if (res.EC == 0 && res.DT?.length > 0) {
             for (const e of res.DT) {
               const row = `<i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Ngày sinh:</i> <b>${e?.studentDateOfBirth}</b> \n<i>Hạng đào tạo:</i> <b>${e?.driverLicenseLevelName}</b> \n<i>Mã khoá học:</i> <b>${e?.courseId}</b> \n<i>Thời gian đào tạo:</i> <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b> \n<i>Quãng đường đào tạo:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b> \n<i>Thời gian thiếu:</i>  <b>${e?.moreTime ? e?.moreTime + " giờ" : ""}</b> \n<i>Quãng đường thiếu:</i>  <b>${e?.moreDistance ? e?.moreDistance + " Km" : ""}</b> \n<i>Ghi chú:</i>  <b>${e?.note || ""}</b>`;
               const pr1 = await ctx.replyWithHTML(row);
-              const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
+              const pr2 = await sleep();
               console.log('check i++', i);
               await Promise.all([pr1, pr2]);
+              console.log('check i++', i);
             };
             isFetchingData = true;
             return;
@@ -221,7 +230,9 @@ const botTelegram = () => {
         isFetchingData = true;
         return;
       }
+
     })
+
 
     bot.command('phien', async (ctx) => {
       try {
@@ -256,11 +267,11 @@ const botTelegram = () => {
               const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${startTime}</b>\n<i>Thời gian kết thúc:</i>  <b>${endTime}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
 
               const pr1 = await ctx.replyWithHTML(row);
-              const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
-              console.log('check i++', i);
+              const pr2 = await sleep();
+              console.log('check i++', i)
               await Promise.all([pr1, pr2]);
             };
-            isFetchingData = true;
+            isFetchingData = true;z
             return;
           } else {
             await ctx.reply("Dữ liệu trống !!!");
@@ -307,7 +318,7 @@ const botTelegram = () => {
             for (const e of res.DT) {
               const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${e?.startTime ? e?.startTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian kết thúc:</i>  <b>${e?.endTime ? e?.endTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
               const pr1 = await ctx.replyWithHTML(row);
-              const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
+              const pr2 = await sleep();
               console.log('check i++', i);
               await Promise.all([pr1, pr2]);
             };
@@ -372,7 +383,7 @@ const botTelegram = () => {
               else {
                 pr1 = await ctx.replyWithHTML(row);
               }
-              const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
+              const pr2 = await sleep();
               console.log('check i++', i);
               i++;
               await Promise.all([pr1, pr2]);
@@ -438,7 +449,7 @@ const botTelegram = () => {
               else {
                 pr1 = await ctx.replyWithHTML(row);
               }
-              const pr2 = await new Promise(resolve => setTimeout(resolve, 1000));
+              const pr2 = await sleep();
               console.log('check i++', i);
               i++;
               await Promise.all([pr1, pr2]);

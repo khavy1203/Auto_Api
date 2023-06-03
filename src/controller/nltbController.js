@@ -166,7 +166,7 @@ const fetchAPIonMhv = async (req, res) => {
               let res = {};
               let j = 0;
               do {
-                res = await await apiGetInfoStudent(result);;
+                res = await apiGetInfoStudent(result);
                 console.log("chạy lại " + j++ + " lần")
               } while (res?.EC != 0)
               if (res.EC == 0 && res?.DT[0]?.studentName) {

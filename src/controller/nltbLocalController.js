@@ -38,14 +38,14 @@ const nltbLocalInDat = async (req, res) => {
                     let res = {};
                     let j = 0;
                     let k = 0;
-
+                    console.log("check result", result)
                     do {
                         let mhv = {};
                         do {
                             mhv = await nltbLocalService.getMHVforCCCD(req?.token, result)
                             console.log("số lần lặp tìm kiếm CCCD", k++)
                         } while (mhv.EC != 0);
-
+                        console.log("check mhv request", mhv)
                         res = await nltbLocalService.dowloadFilePDFFromNLTBLocal(req?.token, mhv.DT);
                         console.log("số lần lặp mhv", j++)
                     } while (res.EC != 0)

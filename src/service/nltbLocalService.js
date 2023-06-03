@@ -14,9 +14,10 @@ const dowloadFilePDFFromNLTBLocal = async (tokenLocalNLTB = null, MHV) => {
             const getSessionStu = axios.create({
                 baseURL: process.env.hostnameLocal,
                 headers: {
-                    'Authorization': `Bearer ${yourBearToken}`
+                    'Authorization': `Bearer ${yourBearToken}`,
                 },
-                responseType: 'stream'
+                responseType: 'stream',
+                
             })
 
             const restAPI = await getSessionStu.get('/api/reporthvth/' + MHV)
@@ -92,6 +93,7 @@ const getMHVforCCCD = async (tokenLocalNLTB = null, CCCD) => {
                         DT: "",
                     });
                 }
+                console.log("check tìm kiếm học viên", response?.data?.Data[0])
                 return ({
                     EM: "Get data successfully",
                     EC: 0,
