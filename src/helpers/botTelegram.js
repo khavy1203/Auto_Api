@@ -29,6 +29,10 @@ const botTelegram = () => {
     '/indat',
     '/daykhoa',
     '/timkhoa'
+  ];
+
+  const arrTongCucCheck = [
+    '/dat'
   ]
   async function sleep() {
     return new Promise(resolve => {
@@ -65,16 +69,16 @@ const botTelegram = () => {
 
           let input = ctx.message.text.split(" ");
           const commandCheck = input.shift();
+          
+          const checkNull = input[0]?.trim();
+          console.log("check giá trị vào", checkNull);
+          if (!checkNull) {
+            await ctx.reply(helpMessage);
+            isFetchingData = true;
+            return;
+          }
 
           if (arrLocalCheck.includes(commandCheck.toLowerCase())) {
-
-            const mhv = input[0]?.trim();
-            console.log("mhv", mhv);
-            if (!mhv) {
-              await ctx.reply(helpMessage);
-              isFetchingData = true;
-              return;
-            }
 
             const res = await checkTokenInLocalNLTB();
             console.log('check res', res)
@@ -92,7 +96,9 @@ const botTelegram = () => {
               }
             }
             await next(ctx);
-          } else {
+          } 
+
+          if(arrTongCucCheck.includes(commandCheck.toLowerCase())){
             const checkData = await checkTokenTelegram();
             if (+checkData?.EC != 0 || !checkData?.DT?.length) {
               const data = await getTokenTelegram();
