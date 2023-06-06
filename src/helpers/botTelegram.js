@@ -30,7 +30,7 @@ const botTelegram = () => {
     '/indat',
     '/daykhoa',
     '/timkhoa',
-    '/datcucbo'
+    '/datlocal'
   ];
 
   const arrTongCucCheck = [
@@ -783,7 +783,7 @@ const botTelegram = () => {
 
     })
 
-    bot.command('datcucbo', async (ctx) => {
+    bot.command('datlocal', async (ctx) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
