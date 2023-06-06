@@ -812,7 +812,7 @@ const botTelegram = () => {
             const pdfBuffer = fs.readFileSync(pdfFilePath);;
             if (fs.existsSync(pdfFilePath)) {
               console.log("file tồn tại")
-              await ctx.replyWithDocument({ source: pdfBuffer, filename: 'DAT_LOCAL.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+              await ctx.replyWithDocument({ source: pdfBuffer, filename: input.join("_") + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
               fs.unlink(pdfFilePath, (err) => {
                 if (err) {
                   console.error(err);
