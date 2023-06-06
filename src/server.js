@@ -5,7 +5,7 @@ import configViewEngine from "./config/viewEngine";
 import apiRoutes from "./routes/api";
 import botTelegram from './helpers/botTelegram';
 import tx from './helpers/tx';
-
+const sql = require('mssql');// Cấu hình kết nối đến SQL Server
 require('dotenv').config();
 
 const app = express();

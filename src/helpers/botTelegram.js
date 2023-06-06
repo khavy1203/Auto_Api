@@ -1,5 +1,6 @@
 const { Telegraf, Extra } = require('telegraf');
 import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenInLocalNLTB } from '../middleware/tokenAction.js';
+import nltbLocalService from '../service/nltbLocalService.js';
 const moment = require('moment');
 const path = require('path');
 
@@ -28,7 +29,8 @@ const botTelegram = () => {
     '/matphien',
     '/indat',
     '/daykhoa',
-    '/timkhoa'
+    '/timkhoa',
+    '/datcucbo'
   ];
 
   const arrTongCucCheck = [
@@ -96,9 +98,9 @@ const botTelegram = () => {
               }
             }
             await next(ctx);
-          } 
+          }
 
-          if(arrTongCucCheck.includes(commandCheck.toLowerCase())){
+          if (arrTongCucCheck.includes(commandCheck.toLowerCase())) {
             const checkData = await checkTokenTelegram();
             if (+checkData?.EC != 0 || !checkData?.DT?.length) {
               const data = await getTokenTelegram();
@@ -277,7 +279,7 @@ const botTelegram = () => {
               console.log('check i++', i)
               await Promise.all([pr1, pr2]);
             };
-            isFetchingData = true;z
+            isFetchingData = true; 
             return;
           } else {
             await ctx.reply("Dữ liệu trống !!!");
@@ -775,6 +777,65 @@ const botTelegram = () => {
       } catch (error) {
         console.log("check error", error)
         await ctx.replyWithHTML("Vui lòng thử lại sau");
+        isFetchingData = true;
+        return;
+      }
+
+    })
+
+    bot.command('datcucbo', async (ctx) => {
+      try {
+        if (isFetchingData) {
+          isFetchingData = false;
+          console.log("DAT detected", ctx);
+          let input = ctx.message.text.split(" ");
+          input.shift();
+          const name = input.join(" ");
+          console.log("name", name);
+          if (!name) {
+            await ctx.reply(helpMessage);
+            isFetchingData = true;
+            return;
+          }
+          //call api get student info
+          let tokenNLTB = ctx?.state?.tokenNLTB;
+          const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
+          if (!mhv?.DT) {
+            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên này');
+            isFetchingData = true;
+            return;
+          }
+          const res = await nltbLocalService.dowloadFilePDFFromNLTBLocal(tokenNLTB, mhv.DT);
+          if (res?.EC == 0) {
+            const pdfFilePath = res.DT;
+            const pdfBuffer = fs.readFileSync(pdfFilePath);;
+            if (fs.existsSync(pdfFilePath)) {
+              console.log("file tồn tại")
+              await ctx.replyWithDocument({ source: pdfBuffer, filename: 'DAT_LOCAL.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+              fs.unlink(pdfFilePath, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+                console.log('File deleted successfully');
+              });
+
+              isFetchingData = true;
+              return;
+            } else {
+              console.log("file KHông tồn tại")
+              ctx.reply("File không tồn tại");
+              isFetchingData = true;
+              return;
+            }
+          } else {
+            await ctx.replyWithHTML(res?.EM);
+            isFetchingData = true;
+            return;
+          }
+        }
+      } catch (e) {
+        await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;
       }

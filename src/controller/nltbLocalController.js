@@ -35,7 +35,7 @@ const nltbLocalInDat = async (req, res) => {
             if (e.length) {
                 let result = e[0];
                 if (result) {
-                    let res = {};
+                    let res = {};   
                     let j = 0;
                     let k = 0;
                     console.log("check result", result)
