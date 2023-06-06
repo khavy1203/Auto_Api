@@ -802,7 +802,7 @@ const botTelegram = () => {
           let tokenNLTB = ctx?.state?.tokenNLTB;
           const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
           if (!mhv?.DT) {
-            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"'+ input.join(" ") + '\" này');
+            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"'+ input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
             isFetchingData = true;
             return;
           }
