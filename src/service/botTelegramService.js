@@ -6,6 +6,10 @@ const { PDFDocument, rgb, StandardFonts, degrees, PDFPage } = require('pdf-lib')
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
+import constant from '../constant/constant';
+const XLSX = require('xlsx');
+
+const pathFolderFileExcels = path.join(__dirname + '..\\..\\') + "fileExcels";
 
 const apiTest = async (id) => {
 	try {
@@ -764,8 +768,85 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 					const params = new URLSearchParams();
 					params.append('dsBienSo', objXe[0]?.BienSo);
 					params.append('idkhoahoc', objSource[0]?.ID);
-					params.append('dsMaDk', "");
 
+					if (constant.listCourseOld.some(obj => obj == objSource[0]?.Ten)) {
+						params.append('dsMaDk', "");
+
+					} else {
+						let pathFileExcels = "";
+						//lấy danh sách học viên và đẩy theo khoá đó
+						const pr1 = await new Promise(async (resolve, reject) => {
+							fs.readdir(pathFolderFileExcels, async (err, files) => {
+								if (err) {
+									console.log('Lỗi khi đọc thư mục:', err);
+									reject({
+										EM: "Lỗi api ...",
+										EC: -2,
+										DT: "",
+									});
+								}
+
+								files.forEach(file => {
+									const fileName = path.basename(file);
+									if (objSource[0]?.Ten.includes) {
+										pathFileExcels = path.join(pathFolderFileExcels, file)
+										console.log("check pathFileExcels2", pathFileExcels)
+										resolve(true)
+									}
+									console.log(fileName);
+								});
+								resolve(false)
+							});
+						})
+						if(!pr1)resolve({
+							EM: `Tìm kiếm file dữ liệu khoá ${objSource[0]?.Ten} không tồn tại. Vui lòng liên hệ Em Vy để được add vào ạ`,
+							EC: 1,
+							DT: "",
+						})
+						console.log("check pathFileExcels1", pathFileExcels)
+						console.log('check pr1', pr1)
+						if (pathFileExcels) {
+							const lstStudentAdd = [];
+								const workbook = XLSX.readFile(pathFileExcels);
+								console.log('check workbook', workbook)
+								const sheetName = workbook.SheetNames[0]; // Lấy tên của sheet đầu tiên
+								console.log('check workbook', sheetName)
+
+								const worksheet = workbook.Sheets[sheetName];
+								const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+								console.log('check data', data)
+								console.log('check data.length', data.length)
+								data.shift();
+								await data.map(async (e) => {
+									console.log('check e in data', e)
+									if (e.length) {
+										console.log("check result", e[0])
+										if(e[1] && e[1].trim().toLowerCase() == 'x')
+										lstStudentAdd?.push(e[0].trim());
+									}
+								})
+							console.log("check lstStudentAdd", lstStudentAdd)
+							if (lstStudentAdd.length > 0) {
+								//call api
+								console.log("check lstStudentAdd.join(", ")", lstStudentAdd.join(","))
+								params.append('dsMaDk', lstStudentAdd.join(","));
+							} else {
+								resolve({
+									EM: `File dữ liệu thông tin khoá ${objSource[0]?.Ten} trống. Vui lòng liên hệ Em Vy ạ`,
+									EC: 1,
+									DT: "",
+								})
+							}
+						} else {
+							resolve({
+								EM: `File dữ liệu thông tin khoá ${objSource[0]?.Ten} chưa được cập nhật. Vui lòng liên hệ Em Vy ạ`,
+								EC: 1,
+								DT: "",
+							})
+						}
+
+					}
+					console.log("về bờ")
 					await getSessionStu.get('/api/xe/?' + params.toString())
 						.then(response => {
 							console.log('check response đẩy khoá', response.status)
@@ -776,13 +857,15 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 									DT: "",
 								});
 							}
-							if (response?.data == true) {
+							if (response?.data) {
+								console.log("check response", response)
 								resolve({
 									EM: `<b>Đẩy khoá học ${objSource[0].Ten} xuống xe ${objXe[0].BienSo} thành công</b>`,
 									EC: 0,
 									DT: "",
 								})
 							} else {
+								console.log("check response", response)
 								resolve({
 									EM: `<b>Đẩy khoá học ${objSource[0].Ten} xuống xe ${objXe[0].BienSo} thất bại</b>`,
 									EC: 1,
@@ -792,15 +875,18 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 
 						})
 						.catch(error => {
+							console.log("check error", error)
 							reject({
 								EM: "Lỗi api ...",
-								EC: -2,
+								EC: 1,
 								DT: "",
 							});
 						});
+
 				}
 
 			}
+
 		});
 
 

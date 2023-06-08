@@ -635,7 +635,6 @@ const botTelegram = () => {
           let tokenLocalNLTB = ctx?.state?.tokenLocalNLTB;
           const res = await botTelegramService.pushSource(tokenLocalNLTB, khoa, biensoxe.replace(/[^a-zA-Z0-9]/g, '').toUpperCase());
           Promise.all([res]);
-          console.log('check res', res);
           if (res?.EC == 0) {
             ctx.replyWithHTML(res.EM);
             isFetchingData = true;
