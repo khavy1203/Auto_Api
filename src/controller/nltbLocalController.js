@@ -2,15 +2,48 @@ const path = require('path');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const dotenv = require('dotenv');
-const { PDFDocument} = require('pdf-lib');
+const { PDFDocument } = require('pdf-lib');
 const { exec } = require('child_process');
 const nltbLocalService = require('../service/nltbLocalService');
+const sql = require('mssql');
+const config = {
+    user: process.env.usernameDTB,
+    password: process.env.passwordDTB,
+    server: process.env.servernameDTB,
+    port: process.env.port,
+    database: process.env.databaseDTB,
+    options: {
+        encrypt: false, // Sử dụng giao thức không bảo mật (plaintext)
+      },
+    
+};
+
+// Function to connect to SQL Server
+async function connectToSqlServer() {
+  try {
+    // Create a connection pool
+    console.log("check config", config)
+    await sql.connect(config);
+    console.log('Connected to SQL Server');
+
+    // Perform your database operations here
+
+    // Close the connection pool
+    await sql.close();
+    console.log('Disconnected from SQL Server');
+  } catch (error) {
+    console.error('Error connecting to SQL Server:', error);
+  }
+}
+
+// Call the function to connect to SQL Server
+connectToSqlServer();
 
 async function sleep() {
     return new Promise(resolve => {
         setTimeout(() => {
             resolve();
-        }, 5000);
+        }, 2000);
     });
 }
 
@@ -35,7 +68,7 @@ const nltbLocalInDat = async (req, res) => {
             if (e.length) {
                 let result = e[0];
                 if (result) {
-                    let res = {};   
+                    let res = {};
                     let j = 0;
                     let k = 0;
                     console.log("check result", result)
@@ -73,15 +106,15 @@ const nltbLocalInDat = async (req, res) => {
                     const printCommand = `"C:\\Users\\KHA VY\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe" -print-to-default -print-settings "duplex,long-edge" "${pathFolderPdf}"`
                     exec(printCommand, (error, stdout, stderr) => {
                         if (error) {
-                          console.error('Lỗi khi in file:', error);
-                          res.status(200).json({
-                            EM: "Lỗi khi in file, vui lòng tiếp tục in lại ...",
-                            EC: 1,
-                            DT: count,
-                        });
+                            console.error('Lỗi khi in file:', error);
+                            res.status(200).json({
+                                EM: "Lỗi khi in file, vui lòng tiếp tục in lại ...",
+                                EC: 1,
+                                DT: count,
+                            });
                         }
                         console.log('File PDF đã được in thành công.');
-                      });
+                    });
                     console.log("Số thứ tự", count)
                     count++;
 
@@ -107,6 +140,163 @@ const nltbLocalInDat = async (req, res) => {
     }
 }
 
+const checkTime = async (hangdaotao, time) => {
+    switch (hangdaotao) {
+        case 'B11': {
+            // do some thing
+            if (time < 12) {
+                return `Quãng đường thiếu ${12 - time} Giờ`
+            }
+            return "";
+        }
+        case 'B1': {
+            // do some thing
+            if (time < 20) {
+                return `Quãng đường thiếu ${20 - time} Giờ`
+            }
+            return "";
+        }
+        case 'B2': {
+            // do some thing
+            if (time < 20) {
+                return `Quãng đường thiếu ${20 - time} Giờ`
+            }
+            return "";
+        }
+        case 'C': {
+            // do some thing
+            if (time < 20) {
+                return `Quãng đường thiếu ${24 - time} Giờ`
+            }
+            return "";
+        }
+        default: {
+            // do something
+            return `Hạng đào tạo ${hangdaotao} này không có`
+        }
+    }
+}
+
+const checkDistance = async (hangdaotao, distance) => {
+    switch (hangdaotao) {
+        case 'B11': {
+            // do some thing
+            if (distance < 710) {
+                return `Quãng đường thiếu ${710 - distance} Km`
+            }
+            return "";
+        }
+        case 'B1': {
+            // do some thing
+            if (distance < 810) {
+                return `Quãng đường thiếu ${810 - distance} Km`
+            }
+            return "";
+        }
+        case 'B2': {
+            // do some thing
+            if (distance < 810) {
+                return `Quãng đường thiếu ${810 - distance} Km`
+            }
+            return "";
+        }
+        case 'C': {
+            // do some thing
+            if (distance < 810) {
+                return `Quãng đường thiếu ${825 - distance} Km`
+            }
+            return "";
+        }
+        default: {
+            // do something
+            return `Hạng đào tạo ${hangdaotao} này không có`
+        }
+    }
+}
+
+const fetchAPIonHVOnLocal = async (req, res) => {
+    try {
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).send('No files were uploaded.');
+        }
+        console.log("check file", req.files)
+        const file = req.files.data;
+        console.log("check file", file)
+        const workbook = XLSX.read(file.data);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        console.log("check rows", rows)
+        const resDataXLSX = [];
+        // Thực hiện fetch
+
+        for (const row of rows) {
+            console.log("check row", row)
+            if (row[0]) {
+                let result = row[0];
+                console.log("check result", result)
+                if (result) {
+                    let j = 0;
+                    // do {
+                        console.log("check req?.token", req?.token)
+                        const res = await nltbLocalService.getInfoStudentForLocal(req?.token, result.trim());
+                        console.log("check res?.DT?", res?.DT?.ID)
+                        console.log("chạy lại " + j++ + " lần")
+                        if (res.EC == 0 && res?.DT?.HoTen) {
+                            const { HoTen, MaDK, NgaySinh, HangDaoTao, IDKhoaHoc, TongThoiGian, TongQD } = res.DT;
+                            const moreTime = await checkTime(HangDaoTao, (TongThoiGian / 60).toFixed(2));
+                            const moreDistance = await checkDistance(HangDaoTao, TongQD);
+                            const newObj = { "Họ và Tên": HoTen, 'Mã học viên': MaDK, 'Ngày sinh': NgaySinh, 'Hạng đào tạo': HangDaoTao, 'Mã khoá học': IDKhoaHoc, 'Đơn vị đào tạo': "Trường Cao Đẳng Xây Dựng - Nông Lâm Trung Bộ", 'Thời gian đào tạo': (TongThoiGian / 60).toFixed(2), 'Quãng đường đào tạo': TongQD, 'Thời gian thiếu': moreTime, 'Quãng đường thiếu': moreDistance, 'Ghi chú': '', 'Yêu cầu': moreTime + " " + moreDistance }
+                            if (res.EC == 0) resDataXLSX.push(newObj)
+                        }
+                    // } while (res?.EC != 0)
+                }
+            }
+        };
+        console.log("check resDataXLSX", resDataXLSX)
+        // const sortData = resDataXLSX.sort((a, b) => a['Tên'].localeCompare(b['Tên']));
+        let i = 0;
+        const updatedSTTArray = resDataXLSX.map((obj, index) => {
+            if (!obj['Tên']) return {
+                'STT': 0,
+                ...obj,
+            };
+            return {
+                'STT': i++,
+                ...obj,
+            };
+        });
+
+        const workbookWrite = XLSX.utils.book_new();
+        // Chuyển đổi dữ liệu thành định dạng Excel
+        const worksheetWrite = XLSX.utils.json_to_sheet(updatedSTTArray);
+        // Thêm worksheet vào workbook
+        XLSX.utils.book_append_sheet(workbookWrite, worksheetWrite, 'ThongTinHocVien');
+        XLSX.writeFile(workbookWrite, `ThongTinHocVien.xlsx`);
+        saveAs('ThongTinHocVienOnLocal.xlsx');
+        console.log("kết thúc")
+        res.status(200).json({
+            EM: 1,
+            EC: 1,
+            DT: 1,
+        });
+        // res.status(200).json({
+        //   EM: data.EM,
+        //   EC: data.EC,
+        //   DT: data.DT,
+        // });
+    } catch (e) {
+        console.log("check e", e)
+        return res.status(500).json({
+            EM: "error from sever", //error message
+            EC: "-1", //error code
+            DT: "",
+        });
+    }
+}
+
+
 module.exports = {
-    nltbLocalInDat
+    nltbLocalInDat,
+    fetchAPIonHVOnLocal
 }

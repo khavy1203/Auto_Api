@@ -16,6 +16,7 @@ const apiRoutes = (app) => {
   routes.get("/nltb/checkToken", nltbController.checkToken);
 
   routes.post("/nltbLocal/inDat", nltbLocalController.nltbLocalInDat);
+  routes.post("/nltbLocal/queryDataOnMHVOnLocal", nltbLocalController.fetchAPIonHVOnLocal);
 
   return app.use("/api/v1/", routes);
 }

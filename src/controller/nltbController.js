@@ -62,7 +62,7 @@ const apiGetInfoStudent = async (mhv) => {
       let dataArr = [];
 
       const options = {
-        hostname: '117.1.28.135',
+        hostname: process.env.hostnameNLTB,
         port: 443,
         path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
         method: 'POST',
