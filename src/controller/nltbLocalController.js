@@ -145,34 +145,34 @@ const checkTime = async (hangdaotao, time) => {
         case 'B11': {
             // do some thing
             if (time < 12) {
-                return `Quãng đường thiếu ${12 - time} Giờ`
+                return (12 - time).toFixed(2);
             }
-            return "";
+            return;
         }
         case 'B1': {
             // do some thing
             if (time < 20) {
-                return `Quãng đường thiếu ${20 - time} Giờ`
+                return (20 - time).toFixed(2);
             }
             return "";
         }
         case 'B2': {
             // do some thing
             if (time < 20) {
-                return `Quãng đường thiếu ${20 - time} Giờ`
+                return (20 - time).toFixed(2);
             }
-            return "";
+            return;
         }
         case 'C': {
             // do some thing
             if (time < 20) {
-                return `Quãng đường thiếu ${24 - time} Giờ`
+                return (24 - time).toFixed(2)
             }
-            return "";
+            return;
         }
         default: {
             // do something
-            return `Hạng đào tạo ${hangdaotao} này không có`
+            return 0;
         }
     }
 }
@@ -182,34 +182,34 @@ const checkDistance = async (hangdaotao, distance) => {
         case 'B11': {
             // do some thing
             if (distance < 710) {
-                return `Quãng đường thiếu ${710 - distance} Km`
+                return (710 - distance).toFixed(2);
             }
-            return "";
+            return;
         }
         case 'B1': {
             // do some thing
             if (distance < 810) {
-                return `Quãng đường thiếu ${810 - distance} Km`
+                return (810 - distance).toFixed(2);
             }
-            return "";
+            return;
         }
         case 'B2': {
             // do some thing
             if (distance < 810) {
-                return `Quãng đường thiếu ${810 - distance} Km`
+                return (810 - distance).toFixed(2);
             }
-            return "";
+            return;
         }
         case 'C': {
             // do some thing
             if (distance < 810) {
-                return `Quãng đường thiếu ${825 - distance} Km`
+                return (825 - distance).toFixed(2)
             }
-            return "";
+            return;
         }
         default: {
             // do something
-            return `Hạng đào tạo ${hangdaotao} này không có`
+            return 0;
         }
     }
 }
@@ -237,19 +237,24 @@ const fetchAPIonHVOnLocal = async (req, res) => {
                 console.log("check result", result)
                 if (result) {
                     let j = 0;
-                    // do {
-                        console.log("check req?.token", req?.token)
-                        const res = await nltbLocalService.getInfoStudentForLocal(req?.token, result.trim());
-                        console.log("check res?.DT?", res?.DT?.ID)
+                    let res = {};
+                    do {
+                         res = await nltbLocalService.getInfoStudentForLocal(req?.token, result.trim());
+                        console.log("check result chay lai", result.trim())
                         console.log("chạy lại " + j++ + " lần")
                         if (res.EC == 0 && res?.DT?.HoTen) {
                             const { HoTen, MaDK, NgaySinh, HangDaoTao, IDKhoaHoc, TongThoiGian, TongQD } = res.DT;
                             const moreTime = await checkTime(HangDaoTao, (TongThoiGian / 60).toFixed(2));
                             const moreDistance = await checkDistance(HangDaoTao, TongQD);
-                            const newObj = { "Họ và Tên": HoTen, 'Mã học viên': MaDK, 'Ngày sinh': NgaySinh, 'Hạng đào tạo': HangDaoTao, 'Mã khoá học': IDKhoaHoc, 'Đơn vị đào tạo': "Trường Cao Đẳng Xây Dựng - Nông Lâm Trung Bộ", 'Thời gian đào tạo': (TongThoiGian / 60).toFixed(2), 'Quãng đường đào tạo': TongQD, 'Thời gian thiếu': moreTime, 'Quãng đường thiếu': moreDistance, 'Ghi chú': '', 'Yêu cầu': moreTime + " " + moreDistance }
+                            let Yc = "";
+                            if(moreDistance && moreTime) Yc = `Thời gian còn thiếu ${moreTime} quãng đường còn thiếu ${moreDistance}`;
+                            if(moreDistance) Yc = `Quãng đường còn thiếu ${moreDistance}`;
+                            if(moreTime) Yc = `Thời gian còn thiếu ${moreTime}`;
+
+                            const newObj = { "Họ và Tên": HoTen, 'Mã học viên': MaDK, 'Ngày sinh': NgaySinh, 'Hạng đào tạo': HangDaoTao, 'Mã khoá học': IDKhoaHoc, 'Đơn vị đào tạo': "Trường Cao Đẳng Xây Dựng - Nông Lâm Trung Bộ", 'Thời gian đào tạo': (TongThoiGian / 60).toFixed(2), 'Quãng đường đào tạo': TongQD, 'Thời gian thiếu': moreTime, 'Quãng đường thiếu': moreDistance, 'Ghi chú': '', 'Yêu cầu': Yc  }
                             if (res.EC == 0) resDataXLSX.push(newObj)
                         }
-                    // } while (res?.EC != 0)
+                    } while (res?.EC != 0)
                 }
             }
         };
