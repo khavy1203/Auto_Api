@@ -2,14 +2,30 @@ const { Telegraf, Extra } = require('telegraf');
 import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenInLocalNLTB } from '../middleware/tokenAction.js';
 import nltbLocalService from '../service/nltbLocalService.js';
 const moment = require('moment');
-const path = require('path');
+const cron = require('node-cron');
+const sql = require('mssql');
+
 
 import botTelegramService from '../service/botTelegramService.js';
 const fs = require('fs');
 
 require('dotenv').config();
 
+const config = {
+  user: process.env.usernameDTB,
+  password: process.env.passwordDTB,
+  server: process.env.servernameDTB,
+  port: parseInt(process.env.portDTB),
+  database: process.env.databaseDTB,
+  options: {
+    encrypt: false, // Sử dụng giao thức không bảo mật (plaintext)
+  },
+
+};
+
+
 const botTelegram = () => {
+  let countRowLoopSession = 0;
 
   const helpMessage = `
     Các cú pháp sử dụng bot ( CÁC CÚ PHÁP VUI LÒNG KHÔNG DẤU ) : 
@@ -126,6 +142,42 @@ const botTelegram = () => {
         return;
       }
     })
+
+    // Define cron job chạy mỗi phút 1 lần
+    cron.schedule('* * * * *', () => {
+      // Kết nối tới SQL Server
+      sql.connect(config).then(() => {
+        console.log('Connected to SQL Server');
+
+        // Tạo một request để thực hiện truy vấn
+        const request = new sql.Request();
+
+        // Truy vấn dữ liệu
+        request.query('SELECT * FROM HttEtmIsted').then((result) => {
+          let coutLoop = result.recordset.length;
+          if(!countRowLoopSession) countRowLoopSession = coutLoop;
+          if(countRowLoopSession){
+            if(countRowLoopSession < coutLoop){
+              isFetchingData = false;
+              bot.telegram.sendMessage(process.env.id_groupNLTB, result.recordset[coutLoop-1])
+              .then(() => {
+                console.log('Đã gửi tin nhắn thành công');
+              })
+              .catch((error) => {
+                console.log('Lỗi khi gửi tin nhắn:', error);
+              });
+            isFetchingData = true;
+            }
+          }
+
+          // Xử lý kết quả truy vấn tại đây
+        }).catch((err) => {
+          console.error('Error querying data:', err);
+        });
+      }).catch((err) => {
+        console.error('Error connecting to SQL Server:', err);
+      });
+    });
 
     bot.command('help', async (ctx) => {
       if (isFetchingData) {
@@ -801,7 +853,7 @@ const botTelegram = () => {
           let tokenNLTB = ctx?.state?.tokenNLTB;
           const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
           if (!mhv?.DT) {
-            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"'+ input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
+            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"' + input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
             isFetchingData = true;
             return;
           }

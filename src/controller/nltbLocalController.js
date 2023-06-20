@@ -6,39 +6,41 @@ const { PDFDocument } = require('pdf-lib');
 const { exec } = require('child_process');
 const nltbLocalService = require('../service/nltbLocalService');
 const sql = require('mssql');
+const io = require('socket.io')();
 const config = {
     user: process.env.usernameDTB,
     password: process.env.passwordDTB,
     server: process.env.servernameDTB,
-    port: process.env.port,
+    port: parseInt(process.env.portDTB),
     database: process.env.databaseDTB,
     options: {
         encrypt: false, // Sử dụng giao thức không bảo mật (plaintext)
-      },
-    
+    },
+
 };
 
-// Function to connect to SQL Server
-async function connectToSqlServer() {
-  try {
-    // Create a connection pool
-    console.log("check config", config)
-    await sql.connect(config);
+// const pool = new sql.ConnectionPool(config);
+// const poolConnect = pool.connect();
+
+// Kết nối tới SQL Server
+sql.connect(config).then(() => {
     console.log('Connected to SQL Server');
-
-    // Perform your database operations here
-
-    // Close the connection pool
-    await sql.close();
-    console.log('Disconnected from SQL Server');
-  } catch (error) {
-    console.error('Error connecting to SQL Server:', error);
-  }
-}
-
-// Call the function to connect to SQL Server
-connectToSqlServer();
-
+  
+    // Tạo một request để thực hiện truy vấn
+    const request = new sql.Request();
+  
+    // Truy vấn dữ liệu
+    request.query('SELECT * FROM HttEtmIsted').then((result) => {
+      console.log('Query result:', result.recordset);
+  
+      // Xử lý kết quả truy vấn tại đây
+    }).catch((err) => {
+      console.error('Error querying data:', err);
+    });
+  }).catch((err) => {
+    console.error('Error connecting to SQL Server:', err);
+  });
+  
 async function sleep() {
     return new Promise(resolve => {
         setTimeout(() => {
@@ -94,7 +96,7 @@ const nltbLocalInDat = async (req, res) => {
                         let { width, height } = page.getSize();
                         let fontSize = 15;
                         let text = count;
-                        let xPos = width - 20;
+                        let xPos = width - 30;
                         let yPos = height - 20;
                         page.drawText(text.toString(), { x: xPos, y: yPos, size: fontSize });
                         // Cập nhật lại vị trí các trang để in 2 mặt
@@ -144,35 +146,35 @@ const checkTime = async (hangdaotao, time) => {
     switch (hangdaotao) {
         case 'B11': {
             // do some thing
-            if (time < 12) {
+            if (time < 12 && time) {
                 return (12 - time).toFixed(2);
             }
             return;
         }
         case 'B1': {
             // do some thing
-            if (time < 20) {
+            if (time < 20 && time) {
                 return (20 - time).toFixed(2);
             }
-            return "";
+            return;
         }
         case 'B2': {
             // do some thing
-            if (time < 20) {
+            if (time < 20 && time) {
                 return (20 - time).toFixed(2);
             }
             return;
         }
         case 'C': {
             // do some thing
-            if (time < 20) {
+            if (time < 20 && time) {
                 return (24 - time).toFixed(2)
             }
             return;
         }
         default: {
             // do something
-            return 0;
+            return;
         }
     }
 }
@@ -209,7 +211,7 @@ const checkDistance = async (hangdaotao, distance) => {
         }
         default: {
             // do something
-            return 0;
+            return;
         }
     }
 }
@@ -239,7 +241,7 @@ const fetchAPIonHVOnLocal = async (req, res) => {
                     let j = 0;
                     let res = {};
                     do {
-                         res = await nltbLocalService.getInfoStudentForLocal(req?.token, result.trim());
+                        res = await nltbLocalService.getInfoStudentForLocal(req?.token, result.trim());
                         console.log("check result chay lai", result.trim())
                         console.log("chạy lại " + j++ + " lần")
                         if (res.EC == 0 && res?.DT?.HoTen) {
@@ -247,11 +249,11 @@ const fetchAPIonHVOnLocal = async (req, res) => {
                             const moreTime = await checkTime(HangDaoTao, (TongThoiGian / 60).toFixed(2));
                             const moreDistance = await checkDistance(HangDaoTao, TongQD);
                             let Yc = "";
-                            if(moreDistance && moreTime) Yc = `Thời gian còn thiếu ${moreTime} quãng đường còn thiếu ${moreDistance}`;
-                            if(moreDistance) Yc = `Quãng đường còn thiếu ${moreDistance}`;
-                            if(moreTime) Yc = `Thời gian còn thiếu ${moreTime}`;
+                            if (moreDistance && moreTime) Yc = `Thời gian còn thiếu ${moreTime} quãng đường còn thiếu ${moreDistance}`;
+                            if (moreDistance) Yc = `Quãng đường còn thiếu ${moreDistance}`;
+                            if (moreTime) Yc = `Thời gian còn thiếu ${moreTime}`;
 
-                            const newObj = { "Họ và Tên": HoTen, 'Mã học viên': MaDK, 'Ngày sinh': NgaySinh, 'Hạng đào tạo': HangDaoTao, 'Mã khoá học': IDKhoaHoc, 'Đơn vị đào tạo': "Trường Cao Đẳng Xây Dựng - Nông Lâm Trung Bộ", 'Thời gian đào tạo': (TongThoiGian / 60).toFixed(2), 'Quãng đường đào tạo': TongQD, 'Thời gian thiếu': moreTime, 'Quãng đường thiếu': moreDistance, 'Ghi chú': '', 'Yêu cầu': Yc  }
+                            const newObj = { "Họ và Tên": HoTen, 'Mã học viên': MaDK, 'Ngày sinh': NgaySinh, 'Hạng đào tạo': HangDaoTao, 'Mã khoá học': IDKhoaHoc, 'Đơn vị đào tạo': "Trường Cao Đẳng Xây Dựng - Nông Lâm Trung Bộ", 'Thời gian đào tạo': (TongThoiGian / 60).toFixed(2), 'Quãng đường đào tạo': TongQD, 'Thời gian thiếu': moreTime, 'Quãng đường thiếu': moreDistance, 'Ghi chú': '', 'Yêu cầu': Yc }
                             if (res.EC == 0) resDataXLSX.push(newObj)
                         }
                     } while (res?.EC != 0)
