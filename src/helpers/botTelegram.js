@@ -144,7 +144,7 @@ const botTelegram = () => {
     })
 
     // Define cron job chạy mỗi phút 1 lần
-    cron.schedule('* * * * *', () => {
+    cron.schedule('* * * * *', async() => {
       // Kết nối tới SQL Server
       sql.connect(config).then(() => {
         console.log('Connected to SQL Server');
@@ -153,23 +153,23 @@ const botTelegram = () => {
         const request = new sql.Request();
 
         // Truy vấn dữ liệu
-        request.query('SELECT * FROM HttEtmIsted').then((result) => {
+        request.query(`SELECT A.ID, A.MaDK,dbo.GetEcoString(HV.HoTen) as 'HotenHocVien', Imei, dbo.GetEcoString(A.TongThoiGian) as 'Tongthoigian', dbo.GetEcoString(A.TongQuangDuong) as 'Tongquangduong', ThoiDiemDangNhap, ThoiDiemDangXuat , dbo.GetEcoString(GV.HoTen) as 'HotenGiaoVien' , BienSo
+        FROM [dbo].HttEtmIsted AS A
+        LEFT JOIN GiaoVienTH as GV on A.IDGV = GV.MaGV
+        LEFT JOIN HocVienTH as HV on A.MaDK = HV.MaDK`).then((result) => {
           let coutLoop = result.recordset.length;
           if(!countRowLoopSession) countRowLoopSession = coutLoop;
           if(countRowLoopSession){
             if(countRowLoopSession < coutLoop){
               isFetchingData = false;
-              bot.telegram.sendMessage(process.env.id_groupNLTB, result.recordset[coutLoop-1])
-              .then(() => {
-                console.log('Đã gửi tin nhắn thành công');
-              })
-              .catch((error) => {
-                console.log('Lỗi khi gửi tin nhắn:', error);
-              });
-            isFetchingData = true;
-            }
+              const {ID, MaDK,HotenHocVien, Imei,Tongthoigian,Tongquangduong, ThoiDiemDangNhap, ThoiDiemDangXuat ,HotenGiaoVien , BienSo} = result.recordset[coutLoop-1];
+              let textNoti = `<i><b>Cảnh báo ! Phát hiện phiên bị trùng 👮👮👮</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HotenHocVien}</b>\n<i>Imei xe:</i> <b>${Imei}</b>\n<i>Tổng thời gian:</i> <b>${Tongthoigian}</b>\n<i>Tổng quãng đường:</i> <b>${Tongquangduong}</b>\n<i>Thời điểm đăng nhập:</i> <b>${ moment(ThoiDiemDangNhap).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss') }</b>\n<i>Thời điểm đăng xuất:</i> <b>${ moment(ThoiDiemDangXuat).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss') }</b>\n<i>Họ tên giáo viên:</i> <b>${HotenGiaoVien}</b>\n <i>Biển số xe:</i> <b>${BienSo}</b>\n 
+              `
+              bot.telegram.sendMessage(process.env.id_groupNLTB, textNoti, { parse_mode: 'HTML' })
+              countRowLoopSession = coutLoop;
+            }else countRowLoopSession = coutLoop;
           }
-
+          isFetchingData = true;
           // Xử lý kết quả truy vấn tại đây
         }).catch((err) => {
           console.error('Error querying data:', err);
