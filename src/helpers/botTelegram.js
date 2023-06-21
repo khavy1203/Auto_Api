@@ -51,7 +51,7 @@ const botTelegram = (app) => {
 
       if (countRowLoopSession == -1) countRowLoopSession = countLoop;
       else{
-        if (coutLoop > countRowLoopSession) {
+        if (countLoop > countRowLoopSession) {
           isFetchingData = false;
           const {
             ID,
@@ -64,12 +64,12 @@ const botTelegram = (app) => {
             ThoiDiemDangXuat,
             HotenGiaoVien,
             BienSo
-          } = result.recordset[coutLoop - 1];
+          } = result.recordset[countLoop - 1];
           let textNoti = `<i><b>Cảnh báo ! Phát hiện phiên bị trùng 👮👮👮</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HotenHocVien}</b>\n<i>Imei xe:</i> <b>${Imei}</b>\n<i>Tổng thời gian:</i> <b>${Tongthoigian}</b>\n<i>Tổng quãng đường:</i> <b>${Tongquangduong}</b>\n<i>Thời điểm đăng nhập:</i> <b>${moment(ThoiDiemDangNhap).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss')}</b>\n<i>Thời điểm đăng xuất:</i> <b>${moment(ThoiDiemDangXuat).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss')}</b>\n<i>Họ tên giáo viên:</i> <b>${HotenGiaoVien}</b>\n <i>Biển số xe:</i> <b>${BienSo}</b>\n 
             `;
           await bot.telegram.sendMessage(process.env.id_admin, textNoti, { parse_mode: 'HTML' });
-          countRowLoopSession = coutLoop;
-        } else countRowLoopSession = coutLoop;
+          countRowLoopSession = countLoop;
+        } else countRowLoopSession = countLoop;
       }
 
       isFetchingData = true;
