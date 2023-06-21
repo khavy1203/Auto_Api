@@ -29,7 +29,7 @@ const botTelegram = (app) => {
   let isFetchingData = true;
   const bot = new Telegraf(process.env.BOT_TOKEN);
 
-  let countRowLoopSession = 0;
+  let countRowLoopSession = -1;
   // Define cron job chạy mỗi phút 1 lần
   cron.schedule('* * * * *', async () => {
     let connection;
@@ -46,10 +46,10 @@ const botTelegram = (app) => {
       FROM [dbo].HttEtmIsted AS A
       LEFT JOIN GiaoVienTH as GV on A.IDGV = GV.MaGV
       LEFT JOIN HocVienTH as HV on A.MaDK = HV.MaDK`);
-      let coutLoop = result.recordset.length;
+      let countLoop = result.recordset.length;
       // Các xử lý khác với dữ liệu trả về từ truy vấn
 
-      if (countRowLoopSession == 0) countRowLoopSession = coutLoop;
+      if (countRowLoopSession == -1) countRowLoopSession = countLoop;
       else{
         if (coutLoop > countRowLoopSession) {
           isFetchingData = false;
