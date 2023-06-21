@@ -28,10 +28,10 @@ const botTelegram = (app) => {
 
   let isFetchingData = true;
   const bot = new Telegraf(process.env.BOT_TOKEN);
-  
+
   let countRowLoopSession = 0;
   // Define cron job chạy mỗi phút 1 lần
-  cron.schedule('0 */2 * * *', async () => {
+  cron.schedule('* * * * *', async () => {
     let connection;
     try {
       // Kết nối tới SQL Server
@@ -49,9 +49,9 @@ const botTelegram = (app) => {
       let coutLoop = result.recordset.length;
       // Các xử lý khác với dữ liệu trả về từ truy vấn
 
-      if (!countRowLoopSession) countRowLoopSession = coutLoop;
-      if (countRowLoopSession) {
-        if (countRowLoopSession < coutLoop) {
+      if (countRowLoopSession == 0) countRowLoopSession = coutLoop;
+      else{
+        if (coutLoop > countRowLoopSession) {
           isFetchingData = false;
           const {
             ID,
@@ -71,6 +71,7 @@ const botTelegram = (app) => {
           countRowLoopSession = coutLoop;
         } else countRowLoopSession = coutLoop;
       }
+
       isFetchingData = true;
       return
       // Xử lý kết quả truy vấn tại đây
@@ -107,7 +108,7 @@ const botTelegram = (app) => {
     `;
 
 
-  
+
   const arrLocalCheck = [
     '/matphien',
     '/indat',
