@@ -2,9 +2,9 @@ const { Telegraf, Extra } = require('telegraf');
 import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenInLocalNLTB } from '../middleware/tokenAction.js';
 import nltbLocalService from '../service/nltbLocalService.js';
 const moment = require('moment');
+
 const cron = require('node-cron');
 const sql = require('mssql');
-
 
 import botTelegramService from '../service/botTelegramService.js';
 const fs = require('fs');
@@ -24,8 +24,76 @@ const config = {
 };
 
 
-const botTelegram = () => {
+const botTelegram = (app) => {
+
+  let isFetchingData = true;
+  const bot = new Telegraf(process.env.BOT_TOKEN);
+  
   let countRowLoopSession = 0;
+  // Define cron job chạy mỗi phút 1 lần
+  cron.schedule('0 */2 * * *', async () => {
+    let connection;
+    try {
+      // Kết nối tới SQL Server
+      connection = await sql.connect(config);
+      console.log('Connected to SQL Server');
+
+      // Tạo một request để thực hiện truy vấn
+      const request = new sql.Request();
+
+      // Truy vấn dữ liệu
+      const result = await request.query(`SELECT A.ID, A.MaDK,dbo.GetEcoString(HV.HoTen) as 'HotenHocVien', Imei, dbo.GetEcoString(A.TongThoiGian) as 'Tongthoigian', dbo.GetEcoString(A.TongQuangDuong) as 'Tongquangduong', ThoiDiemDangNhap, ThoiDiemDangXuat , dbo.GetEcoString(GV.HoTen) as 'HotenGiaoVien' , BienSo
+      FROM [dbo].HttEtmIsted AS A
+      LEFT JOIN GiaoVienTH as GV on A.IDGV = GV.MaGV
+      LEFT JOIN HocVienTH as HV on A.MaDK = HV.MaDK`);
+      let coutLoop = result.recordset.length;
+      // Các xử lý khác với dữ liệu trả về từ truy vấn
+
+      if (!countRowLoopSession) countRowLoopSession = coutLoop;
+      if (countRowLoopSession) {
+        if (countRowLoopSession < coutLoop) {
+          isFetchingData = false;
+          const {
+            ID,
+            MaDK,
+            HotenHocVien,
+            Imei,
+            Tongthoigian,
+            Tongquangduong,
+            ThoiDiemDangNhap,
+            ThoiDiemDangXuat,
+            HotenGiaoVien,
+            BienSo
+          } = result.recordset[coutLoop - 1];
+          let textNoti = `<i><b>Cảnh báo ! Phát hiện phiên bị trùng 👮👮👮</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HotenHocVien}</b>\n<i>Imei xe:</i> <b>${Imei}</b>\n<i>Tổng thời gian:</i> <b>${Tongthoigian}</b>\n<i>Tổng quãng đường:</i> <b>${Tongquangduong}</b>\n<i>Thời điểm đăng nhập:</i> <b>${moment(ThoiDiemDangNhap).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss')}</b>\n<i>Thời điểm đăng xuất:</i> <b>${moment(ThoiDiemDangXuat).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss')}</b>\n<i>Họ tên giáo viên:</i> <b>${HotenGiaoVien}</b>\n <i>Biển số xe:</i> <b>${BienSo}</b>\n 
+            `;
+          await bot.telegram.sendMessage(process.env.id_admin, textNoti, { parse_mode: 'HTML' });
+          countRowLoopSession = coutLoop;
+        } else countRowLoopSession = coutLoop;
+      }
+      isFetchingData = true;
+      return
+      // Xử lý kết quả truy vấn tại đây
+    } catch (err) {
+      console.error('Error:', err);
+      isFetchingData = true;
+      return
+    } finally {
+      // Đóng kết nối
+      if (connection) {
+        try {
+          await connection.close();
+          console.log('Connection closed');
+          isFetchingData = true;
+          return
+        } catch (err) {
+          console.error('Error closing connection:', err);
+          isFetchingData = true;
+          return
+        }
+      }
+    }
+  });
 
   const helpMessage = `
     Các cú pháp sử dụng bot ( CÁC CÚ PHÁP VUI LÒNG KHÔNG DẤU ) : 
@@ -39,9 +107,7 @@ const botTelegram = () => {
     `;
 
 
-  let isFetchingData = true;
-
-  const bot = new Telegraf(process.env.BOT_TOKEN);
+  
   const arrLocalCheck = [
     '/matphien',
     '/indat',
@@ -142,71 +208,6 @@ const botTelegram = () => {
         return;
       }
     })
-
-    // Define cron job chạy mỗi phút 1 lần
-    cron.schedule('* * * * *', async () => {
-      let connection;
-      try {
-        // Kết nối tới SQL Server
-        connection = await sql.connect(config);
-        console.log('Connected to SQL Server');
-
-        // Tạo một request để thực hiện truy vấn
-        const request = new sql.Request();
-
-        // Truy vấn dữ liệu
-        const result = await request.query(`SELECT A.ID, A.MaDK,dbo.GetEcoString(HV.HoTen) as 'HotenHocVien', Imei, dbo.GetEcoString(A.TongThoiGian) as 'Tongthoigian', dbo.GetEcoString(A.TongQuangDuong) as 'Tongquangduong', ThoiDiemDangNhap, ThoiDiemDangXuat , dbo.GetEcoString(GV.HoTen) as 'HotenGiaoVien' , BienSo
-        FROM [dbo].HttEtmIsted AS A
-        LEFT JOIN GiaoVienTH as GV on A.IDGV = GV.MaGV
-        LEFT JOIN HocVienTH as HV on A.MaDK = HV.MaDK`);
-        let coutLoop = result.recordset.length;
-        // Các xử lý khác với dữ liệu trả về từ truy vấn
-
-        if (!countRowLoopSession) countRowLoopSession = coutLoop;
-        if (countRowLoopSession) {
-          if (countRowLoopSession < coutLoop) {
-            isFetchingData = false;
-            const {
-              ID,
-              MaDK,
-              HotenHocVien,
-              Imei,
-              Tongthoigian,
-              Tongquangduong,
-              ThoiDiemDangNhap,
-              ThoiDiemDangXuat,
-              HotenGiaoVien,
-              BienSo
-            } = result.recordset[coutLoop - 1];
-            let textNoti = `<i><b>Cảnh báo ! Phát hiện phiên bị trùng 👮👮👮</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HotenHocVien}</b>\n<i>Imei xe:</i> <b>${Imei}</b>\n<i>Tổng thời gian:</i> <b>${Tongthoigian}</b>\n<i>Tổng quãng đường:</i> <b>${Tongquangduong}</b>\n<i>Thời điểm đăng nhập:</i> <b>${moment(ThoiDiemDangNhap).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss')}</b>\n<i>Thời điểm đăng xuất:</i> <b>${moment(ThoiDiemDangXuat).utcOffset('+0000').format('DD/MM/YYYY HH:mm:ss')}</b>\n<i>Họ tên giáo viên:</i> <b>${HotenGiaoVien}</b>\n <i>Biển số xe:</i> <b>${BienSo}</b>\n 
-              `;
-            await bot.telegram.sendMessage(process.env.id_groupNLTB, textNoti, { parse_mode: 'HTML' });
-            countRowLoopSession = coutLoop;
-          } else countRowLoopSession = coutLoop;
-        }
-        isFetchingData = true;
-        return
-        // Xử lý kết quả truy vấn tại đây
-      } catch (err) {
-        console.error('Error:', err);
-        isFetchingData = true;
-        return
-      } finally {
-        // Đóng kết nối
-        if (connection) {
-          try {
-            await connection.close();
-            console.log('Connection closed');
-            isFetchingData = true;
-            return
-          } catch (err) {
-            console.error('Error closing connection:', err);
-            isFetchingData = true;
-            return
-          }
-        }
-      }
-    });
 
     bot.command('help', async (ctx) => {
       if (isFetchingData) {
