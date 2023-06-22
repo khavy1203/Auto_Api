@@ -117,7 +117,7 @@ function convertMinutesToTime(minutes) {
 
 const checkTimeNight = async (time) => {
     if(time <3){
-        return 3-time;
+        return (3-time).toFixed(2);
     }
     return;
 }
