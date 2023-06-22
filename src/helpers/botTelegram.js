@@ -2,26 +2,15 @@ const { Telegraf, Extra } = require('telegraf');
 import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenInLocalNLTB } from '../middleware/tokenAction.js';
 import nltbLocalService from '../service/nltbLocalService.js';
 const moment = require('moment');
+import constant from '../constant/constant.js';
+import nltbLocalController from "../controller/nltbLocalController.js"
 
 const cron = require('node-cron');
 const sql = require('mssql');
 
 import botTelegramService from '../service/botTelegramService.js';
 const fs = require('fs');
-
 require('dotenv').config();
-
-const config = {
-  user: process.env.usernameDTB,
-  password: process.env.passwordDTB,
-  server: process.env.servernameDTB,
-  port: parseInt(process.env.portDTB),
-  database: process.env.databaseDTB,
-  options: {
-    encrypt: false, // Sử dụng giao thức không bảo mật (plaintext)
-  },
-
-};
 
 
 const botTelegram = (app) => {
@@ -31,11 +20,11 @@ const botTelegram = (app) => {
 
   let countRowLoopSession = -1;
   // Define cron job chạy mỗi phút 1 lần
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('0 */4 * * *', async () => {
     let connection;
     try {
       // Kết nối tới SQL Server
-      connection = await sql.connect(config);
+      connection = await sql.connect(constant.config);
       console.log('Connected to SQL Server');
 
       // Tạo một request để thực hiện truy vấn
@@ -118,8 +107,10 @@ const botTelegram = (app) => {
   ];
 
   const arrTongCucCheck = [
-    '/dat'
+    '/dat',
+    '/phien'
   ]
+  
   async function sleep() {
     return new Promise(resolve => {
       setTimeout(() => {
@@ -181,25 +172,25 @@ const botTelegram = (app) => {
                 return;
               }
             }
-            await next(ctx);
           }
+          await next(ctx);// nếu middleware thì cần await next trong mỗi ràng buộc
 
-          if (arrTongCucCheck.includes(commandCheck.toLowerCase())) {
-            const checkData = await checkTokenTelegram();
-            if (+checkData?.EC != 0 || !checkData?.DT?.length) {
-              const data = await getTokenTelegram();
-              console.log('check data in getToken', data)
-              if (+data.EC != 0 || !data?.DT?.id_token) {
-                await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
-                isFetchingData = true;
-                return;
-              } else {
-                ctx.state.tokenNLTB = data?.DT?.id_token;
-              }
-            }
-            ctx.state.tokenNLTB = process.env.tokenNLTB;
-            await next(ctx);
-          }
+          // if (arrTongCucCheck.includes(commandCheck.toLowerCase())) {
+          //   const checkData = await checkTokenTelegram();
+          //   if (+checkData?.EC != 0 || !checkData?.DT?.length) {
+          //     const data = await getTokenTelegram();
+          //     console.log('check data in getToken', data)
+          //     if (+data.EC != 0 || !data?.DT?.id_token) {
+          //       await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+          //       isFetchingData = true;
+          //       return;
+          //     } else {
+          //       ctx.state.tokenNLTB = data?.DT?.id_token;
+          //     }
+          //   }
+          //   ctx.state.tokenNLTB = process.env.tokenNLTB;
+          //   await next(ctx);
+          // }
 
         }
       } catch (e) {
@@ -235,25 +226,31 @@ const botTelegram = (app) => {
             isFetchingData = true;
             return;
           }
-          //call api get student info
-          let tokenNLTB = ctx?.state?.tokenNLTB;
-          const res = await botTelegramService.getInfoStudent(tokenNLTB, name);
+          
+          const res = await botTelegramService.getInfoStudent(name.trim());
+
           Promise.all([res]);
           console.log('check data', res);
           if (+res?.EC != 0) {
-            await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+            await ctx.reply('Truy vấn thất bại');
             isFetchingData = true;
             return;
           }
           let i = 1;
           if (res.EC == 0 && res.DT?.length > 0) {
             for (const e of res.DT) {
-              const row = `<i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Ngày sinh:</i> <b>${e?.studentDateOfBirth}</b> \n<i>Hạng đào tạo:</i> <b>${e?.driverLicenseLevelName}</b> \n<i>Mã khoá học:</i> <b>${e?.courseId}</b> \n<i>Thời gian đào tạo:</i> <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b> \n<i>Quãng đường đào tạo:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b> \n<i>Thời gian thiếu:</i>  <b>${e?.moreTime ? e?.moreTime + " giờ" : ""}</b> \n<i>Quãng đường thiếu:</i>  <b>${e?.moreDistance ? e?.moreDistance + " Km" : ""}</b> \n<i>Ghi chú:</i>  <b>${e?.note || ""}</b>`;
-              const pr1 = await ctx.replyWithHTML(row);
+              const {
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem
+              } = e;
+              const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
+              const moreDistance =await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
+              const moreTimeNight = await nltbLocalController.checkTimeNight(TongThoiGianBanDem);
+              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>
+                `;
+
+              const pr1 = await ctx.replyWithHTML(textNoti);
               const pr2 = await sleep();
-              console.log('check i++', i);
               await Promise.all([pr1, pr2]);
-              console.log('check i++', i);
             };
             isFetchingData = true;
             return;
@@ -287,25 +284,31 @@ const botTelegram = (app) => {
             isFetchingData = true;
             return;
           }
-          //call api get student info
-          let tokenNLTB = ctx?.state?.tokenNLTB;
-          const res = await botTelegramService.getInfoStudent(tokenNLTB, name);
+          
+          const res = await botTelegramService.getInfoStudent(name.trim());
+
           Promise.all([res]);
           console.log('check data', res);
           if (+res?.EC != 0) {
-            await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+            await ctx.reply('Truy vấn thất bại');
             isFetchingData = true;
             return;
           }
           let i = 1;
           if (res.EC == 0 && res.DT?.length > 0) {
             for (const e of res.DT) {
-              const row = `<i>STT:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Ngày sinh:</i> <b>${e?.studentDateOfBirth}</b> \n<i>Hạng đào tạo:</i> <b>${e?.driverLicenseLevelName}</b> \n<i>Mã khoá học:</i> <b>${e?.courseId}</b> \n<i>Thời gian đào tạo:</i> <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b> \n<i>Quãng đường đào tạo:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b> \n<i>Thời gian thiếu:</i>  <b>${e?.moreTime ? e?.moreTime + " giờ" : ""}</b> \n<i>Quãng đường thiếu:</i>  <b>${e?.moreDistance ? e?.moreDistance + " Km" : ""}</b> \n<i>Ghi chú:</i>  <b>${e?.note || ""}</b>`;
-              const pr1 = await ctx.replyWithHTML(row);
+              const {
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem
+              } = e;
+              const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
+              const moreDistance =await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
+              const moreTimeNight = await nltbLocalController.checkTimeNight(TongThoiGianBanDem);
+              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>
+                `;
+
+              const pr1 = await ctx.replyWithHTML(textNoti);
               const pr2 = await sleep();
-              console.log('check i++', i);
               await Promise.all([pr1, pr2]);
-              console.log('check i++', i);
             };
             isFetchingData = true;
             return;
@@ -324,7 +327,6 @@ const botTelegram = (app) => {
       }
 
     })
-
 
     bot.command('phien', async (ctx) => {
       try {

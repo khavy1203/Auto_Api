@@ -5,42 +5,7 @@ const dotenv = require('dotenv');
 const { PDFDocument } = require('pdf-lib');
 const { exec } = require('child_process');
 const nltbLocalService = require('../service/nltbLocalService');
-const sql = require('mssql');
-const io = require('socket.io')();
-const config = {
-    user: process.env.usernameDTB,
-    password: process.env.passwordDTB,
-    server: process.env.servernameDTB,
-    port: parseInt(process.env.portDTB),
-    database: process.env.databaseDTB,
-    options: {
-        encrypt: false, // Sử dụng giao thức không bảo mật (plaintext)
-    },
 
-};
-
-// const pool = new sql.ConnectionPool(config);
-// const poolConnect = pool.connect();
-
-// Kết nối tới SQL Server
-sql.connect(config).then(() => {
-    console.log('Connected to SQL Server');
-  
-    // Tạo một request để thực hiện truy vấn
-    const request = new sql.Request();
-  
-    // Truy vấn dữ liệu
-    request.query('SELECT * FROM HttEtmIsted').then((result) => {
-      console.log('Query result:', result.recordset);
-  
-      // Xử lý kết quả truy vấn tại đây
-    }).catch((err) => {
-      console.error('Error querying data:', err);
-    });
-  }).catch((err) => {
-    console.error('Error connecting to SQL Server:', err);
-  });
-  
 async function sleep() {
     return new Promise(resolve => {
         setTimeout(() => {
@@ -140,6 +105,21 @@ const nltbLocalInDat = async (req, res) => {
             DT: "",
         });
     }
+}
+
+function convertMinutesToTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    const timeString = `${hours} giờ ${mins} phút`;
+    return timeString;
+  }
+
+const checkTimeNight = async (time) => {
+    if(time <3){
+        return 3-time;
+    }
+    return;
 }
 
 const checkTime = async (hangdaotao, time) => {
@@ -305,5 +285,8 @@ const fetchAPIonHVOnLocal = async (req, res) => {
 
 module.exports = {
     nltbLocalInDat,
-    fetchAPIonHVOnLocal
+    fetchAPIonHVOnLocal,
+    checkDistance,
+    checkTime,
+    checkTimeNight
 }

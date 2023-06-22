@@ -2,14 +2,23 @@ const dotenv = require('dotenv');
 const https = require('https');
 const axios = require('axios');
 require("dotenv").config();
-const { PDFDocument, rgb, StandardFonts, degrees, PDFPage } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
 import constant from '../constant/constant';
 const XLSX = require('xlsx');
+const sql = require('mssql');
 
 const pathFolderFileExcels = path.join(__dirname + '..\\..\\') + "fileExcels";
+
+function checkValueType(value) {
+	if (!isNaN(value)) {
+		return true;
+	  } else {
+		return false;
+	  }
+
+}
 
 const apiTest = async (id) => {
 	try {
@@ -39,119 +48,92 @@ const apiTest = async (id) => {
 	}
 };
 
-const getInfoStudent = async (token = null, name) => {
+const getInfoStudent = async (name) => {
+	let connection;
 	try {
-		return new Promise((resolve, reject) => {
+		// Kết nối tới SQL Server
+		connection = await sql.connect(constant.config);
+		console.log('Connected to SQL Server');
 
-			const yourBearToken = token ? token : process.env.tokenNLTB;
-
-			const payload = {
-				administrativeUnitId: 35,
-				centerId: null,
-				centerIdParam: null,
-				driverLicenseLevelName: null,
-				eventReloadName: null,
-				fromDate: null,
-				practiceResultId: null,
-				providerId: null,
-				qualifiedYn: null,
-				timeFrom: null,
-				timeTo: null,
-				toDate: null,
-				searchString: name
+		// Tạo một request để thực hiện truy vấn
+		const request = new sql.Request();
+		const typeOffName = checkValueType(name);
+		let optionQuery = "";
+		if (typeOffName) {
+			//là số
+			optionQuery = `
+				(
+					HV.SoCMT LIKE '%${name}%'
+					OR HV.MaDK LIKE '%${name}%'
+				)`
+		} else {
+			//là chuỗi
+			if (name.includes('-')) {
+				optionQuery = `
+					(
+						HV.MaDK like N'%${name}%'
+					)`
+			} else {
+				optionQuery = `
+					(
+						dbo.GetEcoString(HoTen) like N'%${name}%'
+					)`
 			}
-			const params = new URLSearchParams();
-			params.append('page', 0);
-			params.append('size', 10);
+		}
+		// Truy vấn dữ liệu
+		console.log('check option', optionQuery)
+		const result = await request.query(`SELECT TOP(10) HV.MaDK,dbo.GetEcoString(HV.HoTen) as HoTen,HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten as TenKhoaHoc,
+			ROUND (COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongQuangDuong), 0) AS FLOAT)), 0),2) AS TongQuangDuong,
+			ROUND ((COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongThoiGian), 0) AS FLOAT)), 0)/3600), 2) AS TongThoiGian,
+			ROUND (CAST(COALESCE(SUM(
+			   CASE
+				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangNhap) < CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00') AND CONVERT(DATETIME, HTHV.ThoiDiemDangXuat) >= CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00')
+					THEN DATEDIFF(minute, CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00'), CONVERT(DATETIME, HTHV.ThoiDiemDangXuat))
+				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangNhap) >= CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00')
+					THEN DATEDIFF(minute, CONVERT(DATETIME, HTHV.ThoiDiemDangNhap), CONVERT(DATETIME, HTHV.ThoiDiemDangXuat))
+				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangNhap) < CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00') AND CONVERT(DATETIME, HTHV.ThoiDiemDangXuat) >= CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00')
+					THEN DATEDIFF(minute, CONVERT(DATETIME, HTHV.ThoiDiemDangNhap), CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00'))
+				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangXuat) < CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00')
+					THEN DATEDIFF(minute, CONVERT(DATETIME, HTHV.ThoiDiemDangNhap), CONVERT(DATETIME, HTHV.ThoiDiemDangXuat))
+				ELSE 0
+			END
+			), 0 ) as float)/60,2) AS TongThoiGianBanDem
+		FROM HocVienTH AS HV
+		LEFT JOIN KhoaHoc as KH ON KH.MaKhoaHoc = HV.MaKhoaHoc
+		JOIN HanhTrinhTuEtm AS HTHV ON HTHV.MaDK = HV.MaDK
+		WHERE 
+			--HTHV.CenterResponseCode = 1
+			--AND
+			${optionQuery}
+			GROUP BY HV.MaDK,dbo.GetEcoString(HV.HoTen),HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten
+			`);
+		
+		// Xử lý kết quả truy vấn tại đây
+		// Đóng kết nối
+		if (connection) {
+			try {
+				await connection.close();
+				return ({
+					EM: "Truy vấn thành công",
+					EC: 0,
+					DT: result.recordset,
+				})
+			} catch (err) {
+				return ({
+					EM: "Truy vấn thất bại",
+					EC: 1,
+					DT: [],
+				})
+			}
+		}
 
-			//1 nốt bay màu SSL =))
-			let dataArr = [];
-			const options = {
-				hostname: process.env.hostnameNLTB,
-				port: 443,
-				path: '/api/student-results/search-report-qua-trinh-dao-tao?' + params.toString(),
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': 'Bearer ' + yourBearToken
-				},
-				rejectUnauthorized: false // Set rejectUnauthorized to false
-			};
-
-			const req = https.request(options, (res) => {
-
-				if (res.statusCode != 200) {
-					reject({
-						EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
-						EC: -1,
-						DT: [],
-					});
-				};
-				// console.log(`statusCode: ${res.statusCode}`);
-				const contentType = res.headers['content-type'];
-				if (!/^application\/json/.test(contentType)) {
-					console.log(`Invalid content type. Expected application/json but received ${contentType}`);
-					reject({
-						EM: "Invalid content type",
-						EC: -3,
-						DT: [],
-					});
-				}
-
-				res.on('data', (d) => {
-					//   let data = process.stdout.write(d);
-					dataArr.push(d);
-				});
-
-				res.on('end', () => {
-					let data = {};
-					try {
-						if (dataArr.length > 0) {
-							let dataBuffer = Buffer.concat(dataArr);
-							data = JSON.parse(dataBuffer.toString());
-							console.log('check data: ' + data);
-							data.forEach(obj => {
-								for (let key in obj) {
-									if (obj[key] == null || obj[key] == 0) delete obj[key];
-								}
-							})
-						}
-					} catch (e) {
-						reject({
-							EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
-							EC: -2,
-							DT: [],
-						});
-					}
-					resolve({
-						EM: "Get data successfully",
-						EC: 0,
-						DT: data,
-					});
-				});
-
-			});
-
-			req.on('error', (error) => {
-				console.log("check error: " + error)
-				reject({
-					EM: "Sever đang bảo trì, vui long truy cập lại sau ... ...",
-					EC: -2,
-					DT: []
-				});
-			});
-
-			req.write(JSON.stringify(payload));
-			req.end();
-		});
-	} catch (error) {
-		reject({
-			EM: "Sever đang bảo trì vui lòng truy cập tính năng lại sau ......",
-			EC: -2,
+	} catch (err) {
+		return ({
+			EM: "Truy vấn thất bại",
+			EC: -1,
 			DT: [],
-		});
+		})
 	}
-
 }
 
 const getSessionStudent = async (token = null, name) => {
@@ -798,7 +780,7 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 								resolve(false)
 							});
 						})
-						if(!pr1)resolve({
+						if (!pr1) resolve({
 							EM: `Tìm kiếm file dữ liệu khoá ${objSource[0]?.Ten} không tồn tại. Vui lòng liên hệ Em Vy để được add vào ạ`,
 							EC: 1,
 							DT: "",
@@ -807,24 +789,24 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 						console.log('check pr1', pr1)
 						if (pathFileExcels) {
 							const lstStudentAdd = [];
-								const workbook = XLSX.readFile(pathFileExcels);
-								console.log('check workbook', workbook)
-								const sheetName = workbook.SheetNames[0]; // Lấy tên của sheet đầu tiên
-								console.log('check workbook', sheetName)
+							const workbook = XLSX.readFile(pathFileExcels);
+							console.log('check workbook', workbook)
+							const sheetName = workbook.SheetNames[0]; // Lấy tên của sheet đầu tiên
+							console.log('check workbook', sheetName)
 
-								const worksheet = workbook.Sheets[sheetName];
-								const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-								console.log('check data', data)
-								console.log('check data.length', data.length)
-								data.shift();
-								await data.map(async (e) => {
-									console.log('check e in data', e)
-									if (e.length) {
-										console.log("check result", e[0])
-										if(e[1] && e[1].trim().toLowerCase() == 'x')
+							const worksheet = workbook.Sheets[sheetName];
+							const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+							console.log('check data', data)
+							console.log('check data.length', data.length)
+							data.shift();
+							await data.map(async (e) => {
+								console.log('check e in data', e)
+								if (e.length) {
+									console.log("check result", e[0])
+									if (e[1] && e[1].trim().toLowerCase() == 'x')
 										lstStudentAdd?.push(e[0].trim());
-									}
-								})
+								}
+							})
 							console.log("check lstStudentAdd", lstStudentAdd)
 							if (lstStudentAdd.length > 0) {
 								//call api
