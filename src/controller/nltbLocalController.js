@@ -110,16 +110,81 @@ const nltbLocalInDat = async (req, res) => {
 function convertMinutesToTime(minutes) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    
+
     const timeString = `${hours} giờ ${mins} phút`;
     return timeString;
-  }
+}
 
-const checkTimeNight = async (time) => {
-    if(time <3){
-        return (3-time).toFixed(2);
+const checkRunOnAutoCar = async (hangdaotao, time) => {
+    switch (hangdaotao) {
+        case 'B11': {
+            // do some thing
+            return;
+        }
+        case 'B1': {
+            // do some thing
+            if (time < 3.2 && time) {
+                return (3.2- time).toFixed(2);
+            }
+            return;
+        }
+        case 'B2': {
+            // do some thing
+            if (time < 3.2 && time) {
+                return (3.2 - time).toFixed(2);
+            }
+            return;
+        }
+        case 'C': {
+            // do some thing
+            if (time < 1 && time) {
+                return (1 - time).toFixed(2)
+            }
+            return;
+        }
+        default: {
+            // do something
+            return;
+        }
     }
-    return;
+}
+
+
+const checkTimeNight = async (hangdaotao, time) => {
+    switch (hangdaotao) {
+        case 'B11': {
+            // do some thing
+            if (time < 3 && time) {
+                return (3 - time).toFixed(2);
+            }
+            return;
+        }
+        case 'B1': {
+            // do some thing
+            if (time < 4 && time) {
+                return (4 - time).toFixed(2);
+            }
+            return;
+        }
+        case 'B2': {
+            // do some thing
+            if (time < 4 && time) {
+                return (4 - time).toFixed(2);
+            }
+            return;
+        }
+        case 'C': {
+            // do some thing
+            if (time < 2.5 && time) {
+                return (2.5 - time).toFixed(2)
+            }
+            return;
+        }
+        default: {
+            // do something
+            return;
+        }
+    }
 }
 
 const checkTime = async (hangdaotao, time) => {
@@ -147,7 +212,7 @@ const checkTime = async (hangdaotao, time) => {
         }
         case 'C': {
             // do some thing
-            if (time < 20 && time) {
+            if (time < 24 && time) {
                 return (24 - time).toFixed(2)
             }
             return;
@@ -288,5 +353,6 @@ module.exports = {
     fetchAPIonHVOnLocal,
     checkDistance,
     checkTime,
-    checkTimeNight
+    checkTimeNight,
+    checkRunOnAutoCar
 }

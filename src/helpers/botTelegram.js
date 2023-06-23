@@ -240,12 +240,13 @@ const botTelegram = (app) => {
           if (res.EC == 0 && res.DT?.length > 0) {
             for (const e of res.DT) {
               const {
-                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong
               } = e;
               const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
               const moreDistance =await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
-              const moreTimeNight = await nltbLocalController.checkTimeNight(TongThoiGianBanDem);
-              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>
+              const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao,TongThoiGianBanDem);
+              const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao,TongThoiGianChayXeTuDong)
+              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>\n<i>Thời gian chạy xe tự động:</i> <b>${TongThoiGianChayXeTuDong ? TongThoiGianChayXeTuDong +' Giờ':''}</b>\n<i>Thời gian ban chạy xe tự động còn thiếu:</i> <b>${ moreRunOnAutoCar ? moreRunOnAutoCar + ' Giờ': ''}</b>
                 `;
 
               const pr1 = await ctx.replyWithHTML(textNoti);
@@ -263,6 +264,7 @@ const botTelegram = (app) => {
         isFetchingData = true;
         return;
       } catch (e) {
+        console.log('check err', e)
         await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;
@@ -298,12 +300,13 @@ const botTelegram = (app) => {
           if (res.EC == 0 && res.DT?.length > 0) {
             for (const e of res.DT) {
               const {
-                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong
               } = e;
               const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
               const moreDistance =await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
-              const moreTimeNight = await nltbLocalController.checkTimeNight(TongThoiGianBanDem);
-              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>
+              const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao,TongThoiGianBanDem);
+              const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao,TongThoiGianChayXeTuDong)
+              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>\n<i>Thời gian chạy xe tự động:</i> <b>${TongThoiGianChayXeTuDong ? TongThoiGianChayXeTuDong +' Giờ':''}</b>\n<i>Thời gian ban chạy xe tự động còn thiếu:</i> <b>${ moreRunOnAutoCar ? moreRunOnAutoCar + ' Giờ': ''}</b>
                 `;
 
               const pr1 = await ctx.replyWithHTML(textNoti);
@@ -321,6 +324,7 @@ const botTelegram = (app) => {
         isFetchingData = true;
         return;
       } catch (e) {
+        console.log('check err', e)
         await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;

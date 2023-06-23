@@ -83,21 +83,46 @@ const getInfoStudent = async (name) => {
 		// Truy vấn dữ liệu
 		console.log('check option', optionQuery)
 		const result = await request.query(`SELECT TOP(10) HV.MaDK,dbo.GetEcoString(HV.HoTen) as HoTen,HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten as TenKhoaHoc,
-			ROUND (COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongQuangDuong), 0) AS FLOAT)), 0),2) AS TongQuangDuong,
-			ROUND ((COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongThoiGian), 0) AS FLOAT)), 0)/3600), 2) AS TongThoiGian,
-			ROUND (CAST(COALESCE(SUM(
-			   CASE
-				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangNhap) < CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00') AND CONVERT(DATETIME, HTHV.ThoiDiemDangXuat) >= CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00')
-					THEN DATEDIFF(minute, CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00'), CONVERT(DATETIME, HTHV.ThoiDiemDangXuat))
-				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangNhap) >= CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00')
-					THEN DATEDIFF(minute, CONVERT(DATETIME, HTHV.ThoiDiemDangNhap), CONVERT(DATETIME, HTHV.ThoiDiemDangXuat))
-				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangNhap) < CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00') AND CONVERT(DATETIME, HTHV.ThoiDiemDangXuat) >= CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00')
-					THEN DATEDIFF(minute, CONVERT(DATETIME, HTHV.ThoiDiemDangNhap), CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00'))
-				WHEN CONVERT(DATETIME, HTHV.ThoiDiemDangXuat) < CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 05:00:00')
-					THEN DATEDIFF(minute, CONVERT(DATETIME, HTHV.ThoiDiemDangNhap), CONVERT(DATETIME, HTHV.ThoiDiemDangXuat))
-				ELSE 0
-			END
-			), 0 ) as float)/60,2) AS TongThoiGianBanDem
+		ROUND (COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongQuangDuong), 0) AS FLOAT)), 0),2) AS TongQuangDuong,
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
+							DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGian,
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) AND (HTHV.BienSo  NOT IN ('77A00475', '77A17946','77A21542','77A17922','78A11051','77A11541','77A24156','77A15491','77A07350','78A10137','77A18246') AND HV.HangDaoTao != 'B11') OR HV.HangDaoTao = 'B11'  THEN
+						CASE
+							WHEN CONVERT(DATE, HTHV.ThoiDiemDangNhap) = CONVERT(DATE, HTHV.ThoiDiemDangXuat) THEN
+								CASE
+									WHEN DATEPART(HOUR, HTHV.ThoiDiemDangNhap) >= 18 THEN
+										DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+									WHEN DATEPART(HOUR, HTHV.ThoiDiemDangNhap) < 18 AND DATEPART(HOUR, HTHV.ThoiDiemDangXuat) >= 18 THEN
+										DATEDIFF(MINUTE, CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00'), HTHV.ThoiDiemDangXuat)
+									ELSE 0
+								END
+							ELSE
+								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, CONVERT(DATETIME, CONVERT(VARCHAR(10), DATEADD(DAY, 1, HTHV.ThoiDiemDangNhap), 120) + ' 00:00:00'))
+						END
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGianBanDem,
+
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN HTHV.BienSo IN ('77A00475', '77A17946','77A21542','77A17922','78A11051','77A11541','77A24156','77A15491','77A07350','78A10137','77A18246')  AND (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
+							DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGianChayXeTuDong
 		FROM HocVienTH AS HV
 		LEFT JOIN KhoaHoc as KH ON KH.MaKhoaHoc = HV.MaKhoaHoc
 		JOIN HanhTrinhTuEtm AS HTHV ON HTHV.MaDK = HV.MaDK
@@ -128,6 +153,7 @@ const getInfoStudent = async (name) => {
 		}
 
 	} catch (err) {
+		console.log('check err', err)
 		return ({
 			EM: "Truy vấn thất bại",
 			EC: -1,
