@@ -123,21 +123,21 @@ const checkRunOnAutoCar = async (hangdaotao, time) => {
         }
         case 'B1': {
             // do some thing
-            if (time < 3.2 && time) {
+            if (time < 3.2) {
                 return (3.2- time).toFixed(2);
             }
             return;
         }
         case 'B2': {
             // do some thing
-            if (time < 3.2 && time) {
+            if (time < 3.2) {
                 return (3.2 - time).toFixed(2);
             }
             return;
         }
         case 'C': {
             // do some thing
-            if (time < 1 && time) {
+            if (time < 1) {
                 return (1 - time).toFixed(2)
             }
             return;
@@ -154,28 +154,28 @@ const checkTimeNight = async (hangdaotao, time) => {
     switch (hangdaotao) {
         case 'B11': {
             // do some thing
-            if (time < 3 && time) {
+            if (time < 3) {
                 return (3 - time).toFixed(2);
             }
             return;
         }
         case 'B1': {
             // do some thing
-            if (time < 4 && time) {
+            if (time < 4) {
                 return (4 - time).toFixed(2);
             }
             return;
         }
         case 'B2': {
             // do some thing
-            if (time < 4 && time) {
+            if (time < 4) {
                 return (4 - time).toFixed(2);
             }
             return;
         }
         case 'C': {
             // do some thing
-            if (time < 2.5 && time) {
+            if (time < 2.5) {
                 return (2.5 - time).toFixed(2)
             }
             return;
@@ -191,28 +191,28 @@ const checkTime = async (hangdaotao, time) => {
     switch (hangdaotao) {
         case 'B11': {
             // do some thing
-            if (time < 12 && time) {
+            if (time < 12) {
                 return (12 - time).toFixed(2);
             }
             return;
         }
         case 'B1': {
             // do some thing
-            if (time < 20 && time) {
+            if (time < 20) {
                 return (20 - time).toFixed(2);
             }
             return;
         }
         case 'B2': {
             // do some thing
-            if (time < 20 && time) {
+            if (time < 20) {
                 return (20 - time).toFixed(2);
             }
             return;
         }
         case 'C': {
             // do some thing
-            if (time < 24 && time) {
+            if (time < 24) {
                 return (24 - time).toFixed(2)
             }
             return;
