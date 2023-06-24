@@ -115,6 +115,12 @@ function convertMinutesToTime(minutes) {
     return timeString;
 }
 
+const checkHourPass10h = async (time) => {
+  if(time < 10  && time > 0)return 10 - time;
+  if (time >= 10) return -1;
+  return 10;
+}
+
 const checkRunOnAutoCar = async (hangdaotao, time) => {
     switch (hangdaotao) {
         case 'B11': {
@@ -354,5 +360,6 @@ module.exports = {
     checkDistance,
     checkTime,
     checkTimeNight,
-    checkRunOnAutoCar
+    checkRunOnAutoCar,
+    checkHourPass10h
 }

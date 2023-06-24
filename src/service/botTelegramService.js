@@ -14,9 +14,9 @@ const pathFolderFileExcels = path.join(__dirname + '..\\..\\') + "fileExcels";
 function checkValueType(value) {
 	if (!isNaN(value)) {
 		return true;
-	  } else {
+	} else {
 		return false;
-	  }
+	}
 
 }
 
@@ -109,7 +109,7 @@ const getInfoStudent = async (name) => {
 								END
 							ELSE
 								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, CONVERT(DATETIME, CONVERT(VARCHAR(10), DATEADD(DAY, 1, HTHV.ThoiDiemDangNhap), 120) + ' 00:00:00'))
-						END
+						END 
 					ELSE 0
 				END
 		), 0 ) as float)/60,2) AS TongThoiGianBanDem,
@@ -122,7 +122,22 @@ const getInfoStudent = async (name) => {
 							DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
 					ELSE 0
 				END
-		), 0 ) as float)/60,2) AS TongThoiGianChayXeTuDong
+		), 0 ) as float)/60,2) AS TongThoiGianChayXeTuDong,
+		ROUND (
+			CAST(COALESCE(
+				SUM(
+					CASE
+						--thời điểm đăng nhập lớn hơn thời điểm hiện tại của ngày hôm qua
+						WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL )  AND HTHV.ThoiDiemDangNhap > DATEADD(DAY, -1, GETDATE()) THEN
+								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+						WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL )  AND (HTHV.ThoiDiemDangNhap < DATEADD(DAY, -1, GETDATE()) AND HTHV.ThoiDiemDangXuat > DATEADD(DAY, -1, GETDATE())) THEN
+								DATEDIFF(MINUTE, DATEADD(DAY, -1, GETDATE()), HTHV.ThoiDiemDangXuat)
+						ELSE 0
+
+					END
+			), 0 ) as float)/60,2) AS TongThoiGianTrong24h,
+			GETDATE() AS ThoiGianHienTai,
+			DATEADD(DAY, +1, MAX(HTHV.ThoiDiemDangXuat)) AS ThoiDiemReset
 		FROM HocVienTH AS HV
 		LEFT JOIN KhoaHoc as KH ON KH.MaKhoaHoc = HV.MaKhoaHoc
 		JOIN HanhTrinhTuEtm AS HTHV ON HTHV.MaDK = HV.MaDK
@@ -132,7 +147,7 @@ const getInfoStudent = async (name) => {
 			${optionQuery}
 			GROUP BY HV.MaDK,dbo.GetEcoString(HV.HoTen),HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten
 			`);
-		
+
 		// Xử lý kết quả truy vấn tại đây
 		// Đóng kết nối
 		if (connection) {
