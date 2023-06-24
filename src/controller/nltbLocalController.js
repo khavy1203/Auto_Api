@@ -255,7 +255,7 @@ const checkDistance = async (hangdaotao, distance) => {
         }
         case 'C': {
             // do some thing
-            if (distance < 810) {
+            if (distance < 825) {
                 return (825 - distance).toFixed(2)
             }
             return;
