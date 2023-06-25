@@ -116,7 +116,7 @@ function convertMinutesToTime(minutes) {
 }
 
 const checkHourPass10h = async (time) => {
-  if(time < 10  && time > 0)return 10 - time;
+  if(time < 10  && time > 0)return (10 - time).toFixed(2);
   if (time >= 10) return -1;
   return 10;
 }
@@ -311,6 +311,7 @@ const fetchAPIonHVOnLocal = async (req, res) => {
                 }
             }
         };
+        
         console.log("check resDataXLSX", resDataXLSX)
         // const sortData = resDataXLSX.sort((a, b) => a['Tên'].localeCompare(b['Tên']));
         let i = 0;

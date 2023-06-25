@@ -4,6 +4,7 @@ import nltbLocalService from '../service/nltbLocalService.js';
 const moment = require('moment');
 import constant from '../constant/constant.js';
 import nltbLocalController from "../controller/nltbLocalController.js"
+import botTelegramController from "../controller/botTelegramController.js"
 
 const cron = require('node-cron');
 const sql = require('mssql');
@@ -248,7 +249,7 @@ const botTelegram = (app) => {
               const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao,TongThoiGianBanDem);
               const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao,TongThoiGianChayXeTuDong)
               const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
-              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>\n<i>Thời gian chạy xe tự động:</i> <b>${TongThoiGianChayXeTuDong ? TongThoiGianChayXeTuDong +' Giờ':''}</b>\n<i>Thời gian chạy xe tự động còn thiếu:</i> <b>${ moreRunOnAutoCar ? moreRunOnAutoCar + ' Giờ': ''}</b>\n<i>Thời gian được phép chạy né vượt 10h/24h:</i> <b>Còn ${ moreTimePass10h!= -1 ? moreTimePass10h + ' Giờ': 'Bạn đang chạy vượt quá 10h'}</b>\n<i>Thời điểm reset lại 10h:</i> <b>${ moreTimePass10h!= -1 && moreTimePass10h != 10 ? moment(ThoiDiemReset).utcOffset('+0000') .format(outputFormat): 'Thời gian đã reset, bạn có thể chạy bất cứ khi nào'}</b>
+              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>\n\n<i>Tổng thời gian chạy xe tự động:</i> <b>${TongThoiGianChayXeTuDong ? TongThoiGianChayXeTuDong +' Giờ':''}</b>\n<i>Thời gian chạy xe tự động còn thiếu:</i> <b>${ moreRunOnAutoCar ? moreRunOnAutoCar + ' Giờ': ''}</b>\n\n<i>Thời gian được phép chạy né vượt 10h/24h:</i> <b>Còn ${ moreTimePass10h!= -1 ? moreTimePass10h + ' Giờ': 'Bạn đang chạy vượt quá 10h'}</b>\n<i>Thời điểm reset lại 10h:</i> <b>${ moreTimePass10h!= -1 && moreTimePass10h != 10 ? moment(ThoiDiemReset).utcOffset('+0000') .format(outputFormat): 'Thời gian đã reset, bạn có thể chạy bất cứ khi nào'}</b>
                 `;
 
               const pr1 = await ctx.replyWithHTML(textNoti);
@@ -311,7 +312,7 @@ const botTelegram = (app) => {
               const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao,TongThoiGianBanDem);
               const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao,TongThoiGianChayXeTuDong)
               const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
-              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>\n<i>Thời gian chạy xe tự động:</i> <b>${TongThoiGianChayXeTuDong ? TongThoiGianChayXeTuDong +' Giờ':''}</b>\n<i>Thời gian chạy xe tự động còn thiếu:</i> <b>${ moreRunOnAutoCar ? moreRunOnAutoCar + ' Giờ': ''}</b>\n<i>Thời gian được phép chạy né vượt 10h/24h:</i> <b>Còn ${ moreTimePass10h!= -1 ? moreTimePass10h + ' Giờ': 'Bạn đang chạy vượt quá 10h'}</b>\n<i>Thời điểm reset lại 10h:</i> <b>${ moreTimePass10h!= -1 && moreTimePass10h != 10 ? moment(ThoiDiemReset).utcOffset('+0000') .format(outputFormat): 'Thời gian đã reset, bạn có thể chạy bất cứ khi nào'}</b>
+              let textNoti = `<i><b>STT: ${i++}</b></i>\n<i>Mã học viên:</i><code style="color: red;"> <b style="color:red;">${MaDK}</b></code>\n<i>Họ Tên Học Viên:</i> <b>${HoTen}</b>\n<i>Ngày sinh:</i> <b>${moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')}</b>\n<i>Số CMND:</i> <b>${SoCMT}</b>\n<i>Hạng đào tạo:</i> <b>${HangDaoTao}</b>\n<i>Khoá học:</i> <b>${TenKhoaHoc}</b>\n<i>Trạng thái cho phép gửi dữ liệu:</i> <b>${IsSend == 1 ? "Cho phép" : "Không cho phép"}</b>\n\n<i>Tổng quãng đường:</i> <b>${TongQuangDuong} Km</b>\n<i>Quãng đường còn thiếu:</i> <b>${moreDistance ? moreDistance + ' Km' :''}</b>\n\n<i>Tổng thời gian:</i> <b>${TongThoiGian} Giờ</b>\n<i>Thời gian còn thiếu:</i> <b>${moreTime? moreTime +' Giờ' : ''}</b>\n\n<i>Tổng thời gian ban đêm:</i> <b>${TongThoiGianBanDem ? TongThoiGianBanDem +' Giờ':''}</b>\n<i>Thời gian ban đêm còn thiếu:</i> <b>${moreTimeNight ? moreTimeNight + ' Giờ': ''}</b>\n\n<i>Tổng thời gian chạy xe tự động:</i> <b>${TongThoiGianChayXeTuDong ? TongThoiGianChayXeTuDong +' Giờ':''}</b>\n<i>Thời gian chạy xe tự động còn thiếu:</i> <b>${ moreRunOnAutoCar ? moreRunOnAutoCar + ' Giờ': ''}</b>\n\n<i>Thời gian được phép chạy né vượt 10h/24h:</i> <b>Còn ${ moreTimePass10h!= -1 ? moreTimePass10h + ' Giờ': 'Bạn đang chạy vượt quá 10h'}</b>\n<i>Thời điểm reset lại 10h:</i> <b>${ moreTimePass10h!= -1 && moreTimePass10h != 10 ? moment(ThoiDiemReset).utcOffset('+0000') .format(outputFormat): 'Thời gian đã reset, bạn có thể chạy bất cứ khi nào'}</b>
                 `;
 
               const pr1 = await ctx.replyWithHTML(textNoti);
@@ -930,6 +931,68 @@ const botTelegram = (app) => {
           }
         }
       } catch (e) {
+        await ctx.reply("Vui lòng thử lại sau !!!");
+        isFetchingData = true;
+        return;
+      }
+
+    })
+
+    //testform 
+    bot.command('testform', async (ctx) => {
+      try {
+        if (isFetchingData) {
+          isFetchingData = false;
+          console.log("DAT detected", ctx);
+          let input = ctx.message.text.split(" ");
+          input.shift();
+          const name = input.join(" ");
+          console.log("name", name);
+          if (!name) {
+            await ctx.reply(helpMessage);
+            isFetchingData = true;
+            return;
+          }
+          //call api get student info
+          let tokenNLTB = ctx?.state?.tokenNLTB;
+          const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
+          if (!mhv?.DT) {
+            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"' + input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
+            isFetchingData = true;
+            return;
+          }
+          const res = await botTelegramController.generatePDF(mhv.DT);
+          if (res?.EC == 0) {
+            // const pdfFilePath = res.DT;
+            // const pdfBuffer = fs.readFileSync(pdfFilePath);;
+            // if (fs.existsSync(pdfFilePath)) {
+            //   console.log("file tồn tại")
+            //   await ctx.replyWithDocument({ source: pdfBuffer, filename: input.join("_") + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+            //   fs.unlink(pdfFilePath, (err) => {
+            //     if (err) {
+            //       console.error(err);
+            //       return;
+            //     }
+            //     console.log('File deleted successfully');
+            //   });
+
+            //   isFetchingData = true;
+            //   return;
+            // } else {
+            //   console.log("file KHông tồn tại")
+            //   ctx.reply("File không tồn tại");
+            //   isFetchingData = true;
+            //   return;
+            // }
+            console.log('file tạo thành công')
+          } else {
+            await ctx.replyWithHTML(res?.EM);
+            isFetchingData = true;
+            return;
+          }
+        }
+      } catch (e) {
+        console.log("check e", e)
         await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;

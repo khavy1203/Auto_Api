@@ -5,6 +5,7 @@ import configViewEngine from "./config/viewEngine";
 import apiRoutes from "./routes/api";
 import botTelegram from './helpers/botTelegram';
 import tx from './helpers/tx';
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(fileUpload());
 configViewEngine(app);
 apiRoutes(app);
 botTelegram(app);
+
 // tx();
 
 const PORT = process.env.PORT || 8080;
