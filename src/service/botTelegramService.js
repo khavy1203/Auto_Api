@@ -93,7 +93,8 @@ const getInfoStudent = async (name) => {
 							dbo.GetEcoString(HTHV.TongThoiGian)
 					ELSE 0
 				END
-		), 0 ) as float)/60,2) AS TongThoiGian,
+		--), 0 ) as float)/60,2) AS TongThoiGian,
+		), 0 ) as float)/3600,2) AS TongThoiGian,
 		ROUND (
 		CAST(COALESCE(
 			SUM(
