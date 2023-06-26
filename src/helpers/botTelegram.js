@@ -954,14 +954,14 @@ const botTelegram = (app) => {
             return;
           }
           //call api get student info
-          let tokenNLTB = ctx?.state?.tokenNLTB;
-          const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
-          if (!mhv?.DT) {
-            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"' + input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
-            isFetchingData = true;
-            return;
-          }
-          const res = await botTelegramController.generatePDF(mhv.DT);
+          // let tokenNLTB = ctx?.state?.tokenNLTB;
+          // const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
+          // if (!mhv?.DT) {
+          //   await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"' + input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
+          //   isFetchingData = true;
+          //   return;
+          // }
+          const res = await botTelegramController.generatePDF("123");
           if (res?.EC == 0) {
             // const pdfFilePath = res.DT;
             // const pdfBuffer = fs.readFileSync(pdfFilePath);;

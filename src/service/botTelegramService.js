@@ -89,7 +89,8 @@ const getInfoStudent = async (name) => {
 			SUM(
 				CASE
 					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
-							DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+							--DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+							dbo.GetEcoString(HTHV.TongThoiGian)
 					ELSE 0
 				END
 		), 0 ) as float)/60,2) AS TongThoiGian,
