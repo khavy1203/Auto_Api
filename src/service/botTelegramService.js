@@ -846,7 +846,7 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 								console.log('check e in data', e)
 								if (e.length) {
 									console.log("check result", e[0])
-									if (e[1] && e[1].trim().toLowerCase() == 'x')
+									if (e[1] && e[1].trim().toLowerCase() == 'TRUE')
 										lstStudentAdd?.push(e[0].trim());
 								}
 							})

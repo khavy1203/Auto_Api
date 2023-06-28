@@ -11,7 +11,12 @@ const config = {
   },
 
 };
+const formCabin = {
+  nameSchool1 : "Trường CĐ Cơ điện - Xây dựn - Nông",
+  nameSchool2 : "lâm Trung Bộ"
+}
 module.exports = {
     listCourseOld,
-    config
+    config, 
+    formCabin
 }
