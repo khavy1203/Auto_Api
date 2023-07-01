@@ -4,19 +4,48 @@ const config = {
   user: process.env.usernameDTB,
   password: process.env.passwordDTB,
   server: process.env.servernameDTB,
-  port: parseInt(process.env.portDTB),
   database: process.env.databaseDTB,
+  port: parseInt(process.env.portDTB),
   options: {
     encrypt: false, // Sử dụng giao thức không bảo mật (plaintext)
   },
 
 };
-const formCabin = {
-  nameSchool1 : "Trường CĐ Cơ điện - Xây dựn - Nông",
-  nameSchool2 : "lâm Trung Bộ"
+const formDat = {
+  nameSchool1 : "Trường CĐ Cơ điện - Xây dựng - Nông",
+  nameSchool2 : "lâm Trung Bộ",
+  nameCountry1: "CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+  nameCountry2: "Độc lập - Tự do - Hạnh phúc",
+  titlePDF1: "BÁO CÁO QUÁ TRÌNH ĐÀO TẠO THỰC HÀNH LÁI XE TRÊN ĐƯỜNG GIAO",
+  titlePDF2: "THÔNG CỦA HỌC VIÊN",
+  infStudentI: "I,THÔNG TIN HỌC VIÊN",
+  infStudent1: "1.Tên học viên:",
+  infStudent2: "2.Mã học viên:",
+  infStudent3: "3.Ngày sinh:",
+  infStudent4: "4.Mã khoá học:",
+  infStudent5: "5.Hạng đào tạo:",
+  infStudent6: "6.Cơ sở đào tạo:",
+  infStudentII: "II, THÔNG TIN QUÁ TRÌNH ĐÀO TẠO",
+  headerTable1: "STT",
+  headerTable2: "Phiên đào tạo",
+  headerTable3: "Ngày đào tạo",
+  headerTable4_1: "Thời gian đào",
+  headerTable4_2:'tạo',
+  headerTable5_1: "Quãng đường",
+  headerTable5_2: "đào tạo",
+  page: "Trang",
+  timeLearnStd: "Thời gian đào tạo",
+  ifLearStd: "Đủ điều kiện thi",
+  confirmStd: "XÁC NHẬN CỦA HỌC VIÊN",
+  confirmSchool: "XÁC NHẬN CỦA CƠ SỞ ĐÀO TẠO",
+  fontSize: 12,
+  textSpace : 18,
+  fontPowerSize: 11,
+  cellWidths : [2, 4, 4, 3, 3],
+  nameHeader:["STT","Phiên đào tạo","Ngày đào tạo","Thời gian","Quãng đường"]
 }
 module.exports = {
     listCourseOld,
     config, 
-    formCabin
+    formDat
 }

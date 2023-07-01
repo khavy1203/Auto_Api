@@ -3,3 +3,7 @@ node_modules/*
 .package-lock.json
 .env
 .ecosystem.config
+src/BAOCAO1/Anh_CD/*
+src/BAOCAO1/Anh_CD_Convert/*
+src/font/*
+src/filesPDF/*

@@ -1104,6 +1104,228 @@ const testform = async (name) => {
 	}
 }
 
+const getInfoStudentOnCource = async (course) => {
+	let connection;
+	try {
+		// Kết nối tới SQL Server
+		connection = await sql.connect(constant.config);
+		console.log('Connected to SQL Server');
+
+		// Tạo một request để thực hiện truy vấn
+		const request = new sql.Request();
+		let optionQuery = `HV.MaKhoaHoc = '${course}'`;
+
+		// Truy vấn dữ liệu
+		console.log('check option', optionQuery)
+		const result = await request.query(`SELECT HV.MaDK,dbo.GetEcoString(HV.HoTen) as HoTen,HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, HV.MaKhoaHoc as MaKhoaHoc,
+		ROUND (COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongQuangDuong), 0) AS FLOAT)), 0),2) AS TongQuangDuong,
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
+							--DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+							dbo.GetEcoString(HTHV.TongThoiGian)
+					ELSE 0
+				END
+		--), 0 ) as float)/60,2) AS TongThoiGian,
+		), 0 ) as float)/3600,2) AS TongThoiGian,
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) AND (HTHV.BienSo  NOT IN ('77A00475', '77A17946','77A21542','77A17922','78A11051','77A11541','77A24156','77A15491','77A07350','78A10137','77A18246') AND HV.HangDaoTao != 'B11') OR HV.HangDaoTao = 'B11'  THEN
+						CASE
+							WHEN CONVERT(DATE, HTHV.ThoiDiemDangNhap) = CONVERT(DATE, HTHV.ThoiDiemDangXuat) THEN
+								CASE
+									WHEN DATEPART(HOUR, HTHV.ThoiDiemDangNhap) >= 18 THEN
+										DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+									WHEN DATEPART(HOUR, HTHV.ThoiDiemDangNhap) < 18 AND DATEPART(HOUR, HTHV.ThoiDiemDangXuat) >= 18 THEN
+										DATEDIFF(MINUTE, CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00'), HTHV.ThoiDiemDangXuat)
+									ELSE 0
+								END
+							ELSE
+								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, CONVERT(DATETIME, CONVERT(VARCHAR(10), DATEADD(DAY, 1, HTHV.ThoiDiemDangNhap), 120) + ' 00:00:00'))
+						END 
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGianBanDem,
+
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN HTHV.BienSo IN ('77A00475', '77A17946','77A21542','77A17922','78A11051','77A11541','77A24156','77A15491','77A07350','78A10137','77A18246')  AND (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
+							DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGianChayXeTuDong,
+		ROUND (
+			CAST(COALESCE(
+				SUM(
+					CASE
+						--thời điểm đăng nhập lớn hơn thời điểm hiện tại của ngày hôm qua
+						WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL )  AND HTHV.ThoiDiemDangNhap > DATEADD(DAY, -1, GETDATE()) THEN
+								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+						WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL )  AND (HTHV.ThoiDiemDangNhap < DATEADD(DAY, -1, GETDATE()) AND HTHV.ThoiDiemDangXuat > DATEADD(DAY, -1, GETDATE())) THEN
+								DATEDIFF(MINUTE, DATEADD(DAY, -1, GETDATE()), HTHV.ThoiDiemDangXuat)
+						ELSE 0
+
+					END
+			), 0 ) as float)/60,2) AS TongThoiGianTrong24h,
+			GETDATE() AS ThoiGianHienTai,
+			DATEADD(DAY, +1, MAX(HTHV.ThoiDiemDangXuat)) AS ThoiDiemReset
+		FROM HocVienTH AS HV
+		LEFT JOIN KhoaHoc as KH ON KH.MaKhoaHoc = HV.MaKhoaHoc
+		LEFT JOIN HanhTrinhTuEtm AS HTHV ON HTHV.MaDK = HV.MaDK
+		WHERE 
+			--HTHV.CenterResponseCode = 1
+			--AND
+			${optionQuery}
+			GROUP BY HV.MaDK,dbo.GetEcoString(HV.HoTen),HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten
+			`);
+
+		// Xử lý kết quả truy vấn tại đây
+		// Đóng kết nối
+		if (connection) {
+			try {
+				await connection.close();
+				return ({
+					EM: "Truy vấn thành công",
+					EC: 0,
+					DT: result.recordset,
+				})
+			} catch (err) {
+				return ({
+					EM: "Truy vấn thất bại",
+					EC: 1,
+					DT: [],
+				})
+			}
+		}
+
+	} catch (err) {
+		console.log('check err', err)
+		return ({
+			EM: "Truy vấn thất bại",
+			EC: -1,
+			DT: [],
+		})
+	}
+}
+
+const getInfoStudentOnMHV = async (mhv) => {
+	let connection;
+	try {
+		// Kết nối tới SQL Server
+		connection = await sql.connect(constant.config);
+		console.log('Connected to SQL Server');
+
+		// Tạo một request để thực hiện truy vấn
+		const request = new sql.Request();
+		let optionQuery = `HV.MaDK = '${mhv}'`;
+
+		// Truy vấn dữ liệu
+		console.log('check option', optionQuery)
+		const result = await request.query(`SELECT HV.MaDK,dbo.GetEcoString(HV.HoTen) as HoTen, FORMAT(HV.NgaySinh, 'dd/MM/yyyy') as NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, HV.MaKhoaHoc as MaKhoaHoc,
+		ROUND (COALESCE(SUM(CAST(ISNULL(dbo.GetEcoString(HTHV.TongQuangDuong), 0) AS FLOAT)), 0),2) AS TongQuangDuong,
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
+							--DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+							dbo.GetEcoString(HTHV.TongThoiGian)
+					ELSE 0
+				END
+		--), 0 ) as float)/60,2) AS TongThoiGian,
+		), 0 ) as float)/3600,2) AS TongThoiGian,
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) AND (HTHV.BienSo  NOT IN ('77A00475', '77A17946','77A21542','77A17922','78A11051','77A11541','77A24156','77A15491','77A07350','78A10137','77A18246') AND HV.HangDaoTao != 'B11') OR HV.HangDaoTao = 'B11'  THEN
+						CASE
+							WHEN CONVERT(DATE, HTHV.ThoiDiemDangNhap) = CONVERT(DATE, HTHV.ThoiDiemDangXuat) THEN
+								CASE
+									WHEN DATEPART(HOUR, HTHV.ThoiDiemDangNhap) >= 18 THEN
+										DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+									WHEN DATEPART(HOUR, HTHV.ThoiDiemDangNhap) < 18 AND DATEPART(HOUR, HTHV.ThoiDiemDangXuat) >= 18 THEN
+										DATEDIFF(MINUTE, CONVERT(DATETIME, CONVERT(VARCHAR(10), HTHV.ThoiDiemDangNhap, 120) + ' 18:00:00'), HTHV.ThoiDiemDangXuat)
+									ELSE 0
+								END
+							ELSE
+								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, CONVERT(DATETIME, CONVERT(VARCHAR(10), DATEADD(DAY, 1, HTHV.ThoiDiemDangNhap), 120) + ' 00:00:00'))
+						END 
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGianBanDem,
+
+		ROUND (
+		CAST(COALESCE(
+			SUM(
+				CASE
+					WHEN HTHV.BienSo IN ('77A00475', '77A17946','77A21542','77A17922','78A11051','77A11541','77A24156','77A15491','77A07350','78A10137','77A18246')  AND (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL ) THEN
+							DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+					ELSE 0
+				END
+		), 0 ) as float)/60,2) AS TongThoiGianChayXeTuDong,
+		ROUND (
+			CAST(COALESCE(
+				SUM(
+					CASE
+						--thời điểm đăng nhập lớn hơn thời điểm hiện tại của ngày hôm qua
+						WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL )  AND HTHV.ThoiDiemDangNhap > DATEADD(DAY, -1, GETDATE()) THEN
+								DATEDIFF(MINUTE, HTHV.ThoiDiemDangNhap, HTHV.ThoiDiemDangXuat)
+						WHEN (HTHV.ThoiDiemDangNhap IS NOT NULL) AND (HTHV.ThoiDiemDangXuat IS NOT NULL )  AND (HTHV.ThoiDiemDangNhap < DATEADD(DAY, -1, GETDATE()) AND HTHV.ThoiDiemDangXuat > DATEADD(DAY, -1, GETDATE())) THEN
+								DATEDIFF(MINUTE, DATEADD(DAY, -1, GETDATE()), HTHV.ThoiDiemDangXuat)
+						ELSE 0
+
+					END
+			), 0 ) as float)/60,2) AS TongThoiGianTrong24h,
+			GETDATE() AS ThoiGianHienTai,
+			DATEADD(DAY, +1, MAX(HTHV.ThoiDiemDangXuat)) AS ThoiDiemReset
+		FROM HocVienTH AS HV
+		LEFT JOIN KhoaHoc as KH ON KH.MaKhoaHoc = HV.MaKhoaHoc
+		LEFT JOIN HanhTrinhTuEtm AS HTHV ON HTHV.MaDK = HV.MaDK
+		WHERE 
+			--HTHV.CenterResponseCode = 1
+			--AND
+			${optionQuery}
+			GROUP BY HV.MaDK,dbo.GetEcoString(HV.HoTen),HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten
+			`);
+
+		// Xử lý kết quả truy vấn tại đây
+		// Đóng kết nối
+		if (connection) {
+			try {
+				await connection.close();
+				return ({
+					EM: "Truy vấn thành công",
+					EC: 0,
+					DT: result.recordset,
+				})
+			} catch (err) {
+				return ({
+					EM: "Truy vấn thất bại",
+					EC: 1,
+					DT: [],
+				})
+			}
+		}
+
+	} catch (err) {
+		console.log('check err', err)
+		return ({
+			EM: "Truy vấn thất bại",
+			EC: -1,
+			DT: [],
+		})
+	}
+}
+
+
+
 module.exports = {
 	pushSource,
 	getInfoStudent,
@@ -1113,5 +1335,7 @@ module.exports = {
 	checkSession,
 	inDat,
 	searchSource,
-	testform
+	testform,
+	getInfoStudentOnCource,
+	getInfoStudentOnMHV
 }
