@@ -13,7 +13,7 @@ const config = {
 };
 const formDat = {
   nameSchool1 : "Trường CĐ Cơ điện - Xây dựng - Nông",
-  nameSchool2 : "lâm Trung Bộ",
+  nameSchool2 : "Lâm Trung Bộ",
   nameCountry1: "CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM",
   nameCountry2: "Độc lập - Tự do - Hạnh phúc",
   titlePDF1: "BÁO CÁO QUÁ TRÌNH ĐÀO TẠO THỰC HÀNH LÁI XE TRÊN ĐƯỜNG GIAO",

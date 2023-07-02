@@ -244,21 +244,27 @@ const indat = async (req, res) => {
                             const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao, TongThoiGianBanDem);
                             const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao, TongThoiGianChayXeTuDong)
                             const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
-                            const print = await toolAutoServices.generatePDF(MaDK, 139, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
+                            const print = await toolAutoServices.generatePDF(MaDK,e.indexOf(1)!= -1 ? e[1] : count, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
                             const printCommand = `"C:\\Users\\KHA VY\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe" -print-to-default -print-settings "duplex,long-edge" "${print}"`
                             await sleep();
                             if(print){
-                                exec(printCommand, (error, stdout, stderr) => {
-                                    if (error) {
-                                        console.error('Lỗi khi in file:', error);
-                                        res.status(200).json({
-                                            EM: "Lỗi khi in file, vui lòng tiếp tục in lại ...",
-                                            EC: 1,
-                                            DT: countStd,
-                                        });
-                                    }
-                                    console.log('File PDF đã được in thành công.');
-                                });
+                                const printPromise  = new Promise((rs,rj) =>{
+                                    exec(printCommand, (error, stdout, stderr) => {
+                                        if (error) {
+                                            console.error('Lỗi khi in file:', error);
+                                            reject(error);
+                                            res.status(200).json({
+                                                EM: "Lỗi khi in file, vui lòng tiếp tục in lại ...",
+                                                EC: 1,
+                                                DT: countStd,
+                                            });
+                                        }
+                                        console.log('File PDF đã được in thành công.');
+                                        resolve();
+                                    });
+                                })
+                                await printPromise;
+                                
                                 count++;
                             }
                            

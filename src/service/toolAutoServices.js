@@ -170,7 +170,7 @@ const generatePDF = async (MaDK, countStd, name, birthday, course, rank, tableDa
             textX = currentX + (cellWidthCenter - textSize) / 2;
             textY = currentY;
 
-            currentPage.drawText('___________________', {
+            currentPage.drawText('__________________', {
                 x: textX,
                 y: textY,
                 size: fontSize,
@@ -477,20 +477,6 @@ const generatePDF = async (MaDK, countStd, name, birthday, course, rank, tableDa
             // let tableData = [
             //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
             //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10'],
-            //   ['Cell 6', 'Cell 7', 'Cell 8', 'Cell 9', 'Cell 10']
             // ];
             tableData.unshift(constant.formDat.nameHeader)
 
