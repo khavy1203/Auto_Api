@@ -848,7 +848,7 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 							data.shift();
 							await data.map(async (e) => {
 								console.log('check e in data', e)
-								if (e.length) {
+								if (e.length > 0) {
 									console.log("check result", e[0])
 									if (e[1] && e[1].trim().toLowerCase() == 'true')
 										lstStudentAdd?.push(e[0].trim());
