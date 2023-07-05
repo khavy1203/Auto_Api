@@ -354,39 +354,35 @@ const botTelegram = (app) => {
             isFetchingData = true;
             return;
           }
-          //call api get student info
-          let tokenNLTB = ctx?.state?.tokenNLTB;
-          const res = await botTelegramService.getSessionStudent(tokenNLTB, name);
-          Promise.all([res]);
-          console.log('check data PHIEN', res);
-          let i = 1;
-          if (+res?.EC != 0) {
-            await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
-            isFetchingData = true;
-            return;
-          }
-          if (res.EC == 0 && res.DT.length > 0) {
-            for (const e of res.DT) {
-              const startTime = e?.startTime ? moment(e?.startTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss') : "";
-              const endTime = e?.endTime ? moment(e?.endTime).utcOffset('+0700').format('DD/MM/YYYY HH:mm:ss') : "";
+          const res = await nltbLocalService.dowloadFilePDFFromNLTBLocal(input.join(" "));
+          if (res?.EC == 0) {
+            const pdfFilePath = res.DT;
+            const pdfBuffer = fs.readFileSync(pdfFilePath);;
+            if (fs.existsSync(pdfFilePath)) {
+              console.log("file tồn tại")
+              await ctx.replyWithDocument({ source: pdfBuffer, filename: input.join("_") + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+              fs.unlink(pdfFilePath, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+                console.log('File deleted successfully');
+              });
 
-              const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${startTime}</b>\n<i>Thời gian kết thúc:</i>  <b>${endTime}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
-
-              const pr1 = await ctx.replyWithHTML(row);
-              const pr2 = await sleep();
-              console.log('check i++', i)
-              await Promise.all([pr1, pr2]);
-            };
-            isFetchingData = true;
-            return;
+              isFetchingData = true;
+              return;
+            } else {
+              console.log("file KHông tồn tại")
+              ctx.reply("File không tồn tại");
+              isFetchingData = true;
+              return;
+            }
           } else {
-            await ctx.reply("Dữ liệu trống !!!");
+            await ctx.replyWithHTML(res?.EM);
             isFetchingData = true;
             return;
           }
         }
-        isFetchingData = true;
-        return;
       } catch (e) {
         await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
@@ -881,6 +877,65 @@ const botTelegram = (app) => {
     })
 
     bot.command('datlocal', async (ctx) => {
+      try {
+        if (isFetchingData) {
+          isFetchingData = false;
+          console.log("DAT detected", ctx);
+          let input = ctx.message.text.split(" ");
+          input.shift();
+          const name = input.join(" ");
+          console.log("name", name);
+          if (!name) {
+            await ctx.reply(helpMessage);
+            isFetchingData = true;
+            return;
+          }
+          //call api get student info
+          let tokenNLTB = ctx?.state?.tokenNLTB;
+          const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
+          if (!mhv?.DT) {
+            await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"' + input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
+            isFetchingData = true;
+            return;
+          }
+          const res = await nltbLocalService.dowloadFilePDFFromNLTBLocal(tokenNLTB, mhv.DT);
+          if (res?.EC == 0) {
+            const pdfFilePath = res.DT;
+            const pdfBuffer = fs.readFileSync(pdfFilePath);;
+            if (fs.existsSync(pdfFilePath)) {
+              console.log("file tồn tại")
+              await ctx.replyWithDocument({ source: pdfBuffer, filename: input.join("_") + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+              fs.unlink(pdfFilePath, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+                console.log('File deleted successfully');
+              });
+
+              isFetchingData = true;
+              return;
+            } else {
+              console.log("file KHông tồn tại")
+              ctx.reply("File không tồn tại");
+              isFetchingData = true;
+              return;
+            }
+          } else {
+            await ctx.replyWithHTML(res?.EM);
+            isFetchingData = true;
+            return;
+          }
+        }
+      } catch (e) {
+        await ctx.reply("Vui lòng thử lại sau !!!");
+        isFetchingData = true;
+        return;
+      }
+
+    })
+
+    bot.command('DATLOCAL', async (ctx) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
