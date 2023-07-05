@@ -812,8 +812,11 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 								}
 
 								files.forEach(file => {
-									const fileName = path.basename(file);
-									if (objSource[0]?.Ten.includes) {
+									const fileName = path.basename(file,path.extname(file));
+									console.log("cheeck fileName", fileName)
+									console.log('check objSource[0]?.Ten.includes', objSource[0]?.Ten)
+									console.log("check objSource[0]?.Ten.includes(fileName)", objSource[0]?.Ten.includes(fileName))
+									if (objSource[0]?.Ten.includes(fileName)) {
 										pathFileExcels = path.join(pathFolderFileExcels, file)
 										console.log("check pathFileExcels2", pathFileExcels)
 										resolve(true)
@@ -831,6 +834,7 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 						console.log("check pathFileExcels1", pathFileExcels)
 						console.log('check pr1', pr1)
 						if (pathFileExcels) {
+							console.log("chekc pathFileExcels", pathFileExcels)
 							const lstStudentAdd = [];
 							const workbook = XLSX.readFile(pathFileExcels);
 							console.log('check workbook', workbook)
