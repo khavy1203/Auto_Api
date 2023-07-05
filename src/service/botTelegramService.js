@@ -144,7 +144,7 @@ const getInfoStudent = async (name) => {
 		LEFT JOIN KhoaHoc as KH ON KH.MaKhoaHoc = HV.MaKhoaHoc
 		JOIN HanhTrinhTuEtm AS HTHV ON HTHV.MaDK = HV.MaDK
 		WHERE 
-			HTHV.CenterResponseCode = 1
+			HTHV.CenterResponseCode in(1,409)
 			AND
 			${optionQuery}
 			GROUP BY HV.MaDK,dbo.GetEcoString(HV.HoTen),HV.NgaySinh,HV.SoCMT,HV.srcAvatar,HV.IDKhoaHoc,HV.HangDaoTao,HV.MaKhoaHoc,HV.IsSend, KH.Ten
