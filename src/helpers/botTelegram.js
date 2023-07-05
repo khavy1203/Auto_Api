@@ -97,8 +97,9 @@ const botTelegram = (app) => {
       /daykhoa tênkhoá biểnsốxe (Đẩy khoá học xuống xe. Ví dụ đẩy khoá 127 xuống xe 77A12345: /daykhoa 127 77A12345 )
     `;
 
-
-
+  const helpAdmin = `
+        /testform dùng để test form
+  `
   const arrLocalCheck = [
     '/matphien',
     '/indat',
@@ -1000,23 +1001,12 @@ const botTelegram = (app) => {
 
     })
 
-    //testform 
-    bot.command('convertJP2', async (ctx) => {
+     //testform 
+     bot.command('helpAdmin', async (ctx) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
-          console.log("DAT detected", ctx);
-          let input = ctx.message.text.split(" ");
-          input.shift();
-          const name = input.join(" ");
-          console.log("name", name);
-          if (!name) {
-            await ctx.reply(helpMessage);
-            isFetchingData = true;
-            return;
-          }
-          const res = await botTelegramController.convertJP2();
-          await ctx.replyWithHTML("Convert jp2 to png success");
+          await ctx.replyWithHTML(helpAdmin);
           isFetchingData = true;
           return;
 

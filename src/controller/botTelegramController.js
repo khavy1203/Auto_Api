@@ -13,7 +13,7 @@ const { PDFDocument, rgb, PDFStandardFont, UnicodeFonts } = require('pdf-lib');
 const fontkit = require('@pdf-lib/fontkit');
 const { exec } = require('child_process');
 // Hàm tạo form và xuất ra file PDF
-const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableData, totalTime, totalDistance, KQ) => {
+const generatePDF = async (MaDK, countStd, name, birthday, course, rank, tableData, totalTime, totalDistance, KQ) => {
   try {
 
     // Tạo tài liệu PDF mới
@@ -295,7 +295,7 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
     currentPage.drawText(`${name}`, {
       x: textX,
       y: textY,
-      size: fontSize-1,
+      size: fontSize - 1,
       font: fontBold,
       color: rgb(0, 0, 0),
       align: 'left',
@@ -542,11 +542,11 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
 
           let contentTG = '';
 
-          k == 0 ? contentTG = `${totalTime}`: contentTG = `${totalDistance}`;;
+          k == 0 ? contentTG = `${totalTime}` : contentTG = `${totalDistance}`;;
 
           textSize = font.widthOfTextAtSize(contentTG, fontSize);
-          textX = currentX + cellWidths.slice(0, 3 + k).reduce((a, b) => a + b, 0) +  cellWidths[3+k]/2 - textSize/2;
-          textY = currentY - rowHeight + fontSize/2;
+          textX = currentX + cellWidths.slice(0, 3 + k).reduce((a, b) => a + b, 0) + cellWidths[3 + k] / 2 - textSize / 2;
+          textY = currentY - rowHeight + fontSize / 2;
 
           currentPage.drawText(contentTG, {
             x: textX,
@@ -595,8 +595,8 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
 
         let contentDK = `${KQ}`
         textSize = font.widthOfTextAtSize(contentDK, fontSize);
-        textX = currentX + cellWidths.slice(0, 4).reduce((a, b) => a + b, 0) +  cellWidths[4]/2 - textSize/2;
-        textY = currentY - rowHeight*2 + fontSize/2;
+        textX = currentX + cellWidths.slice(0, 4).reduce((a, b) => a + b, 0) + cellWidths[4] / 2 - textSize / 2;
+        textY = currentY - rowHeight * 2 + fontSize / 2;
 
         currentPage.drawText(contentDK, {
           x: textX,
@@ -612,8 +612,8 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
         textSize = fontBold.widthOfTextAtSize(constant.formDat.confirmStd, fontSize);
 
         currentPage.drawText(constant.formDat.confirmStd, {
-          x: 2.5*28.5,
-          y: textY = currentY - rowHeight*2 + fontSize/2 - 2*textSpace,
+          x: 2.5 * 28.5,
+          y: textY = currentY - rowHeight * 2 + fontSize / 2 - 2 * textSpace,
           size: fontSize,
           font: fontBold,
           color: rgb(0, 0, 0),
@@ -626,8 +626,8 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
         textSize = fontBold.widthOfTextAtSize(nameStudent, fontSize);
 
         currentPage.drawText(nameStudent, {
-          x: 5*28.5 - textSize/2 + fontSize,
-          y: currentY - rowHeight*6 + fontSize/2,
+          x: 5 * 28.5 - textSize / 2 + fontSize,
+          y: currentY - rowHeight * 6 + fontSize / 2,
           size: fontSize,
           font: fontBold,
           color: rgb(0, 0, 0),
@@ -637,8 +637,8 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
 
 
         currentPage.drawText(constant.formDat.confirmSchool, {
-          x: 11.2*28.5,
-          y: textY = currentY - rowHeight*2 + fontSize/2 - 2*textSpace,
+          x: 11.2 * 28.5,
+          y: textY = currentY - rowHeight * 2 + fontSize / 2 - 2 * textSpace,
           size: fontSize,
           font: fontBold,
           color: rgb(0, 0, 0),
@@ -673,11 +673,11 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
           currentPage.drawText(content, {
             x: textX,
             y: textY,
-            size: fontSize ,
+            size: fontSize,
             font: j == 0 || i == 0 ? fontBold : font,
             color: rgb(0, 0, 0),
             align: 'center',
-            lineHeight: fontSize - 2 ,
+            lineHeight: fontSize - 2,
           });
         }
 
@@ -689,55 +689,13 @@ const generatePDF = async (MaDK, countStd,name, birthday, course, rank , tableDa
     // Lưu file PDF
     const pdfBytes = await pdfDoc.save();
 
-    fs.writeFileSync(path.join(__dirname,'..','filesPDF','inDat',`${MaDK}.pdf`), pdfBytes);
+    fs.writeFileSync(path.join(__dirname, '..', 'filesPDF', 'inDat', `${MaDK}.pdf`), pdfBytes);
   } catch (e) {
     console.log('check err', e)
   }
 
 }
 
-function traverseDirectories(dir, outputDir) {
-  // Đọc nội dung của thư mục
-  const files = fs.readdirSync(dir);
-
-  // Duyệt qua từng tệp và thư mục trong thư mục hiện tại
-  files.forEach(file => {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-
-    if (stat.isFile()) {
-      // Kiểm tra nếu tệp có phần mở rộng .jp2
-      if (path.extname(file) === '.jp2') {
-        console.log('Tìm thấy tệp JP2:', filePath);
-        const fileName = path.parse(filePath).name;
-        const command = `magick "${filePath}" "${outputDir}\\${fileName}.png"`;
-        exec(command, (error, stdout, stderr) => {
-          if (error) {
-            console.error('Lỗi chuyển đổi hình ảnh:', error);
-            return;
-          }
-
-          console.log('Đã chuyển đổi thành công!');
-        });
-        // Thực hiện các thao tác khác với tệp JP2 ở đây
-      }
-    } else if (stat.isDirectory()) {
-      // Nếu là thư mục, tiếp tục duyệt đệ quy vào thư mục con
-      traverseDirectories(filePath, outputDir);
-    }
-  });
-
-}
-
-
-const convertJP2 = () => {
-  const inputDir = path.join(__dirname, '..', 'BAOCAO1', 'Anh_CD');
-  const outputDir = path.join(__dirname, '..', 'BAOCAO1', 'Anh_CD_CONVERT');
-
-  traverseDirectories(inputDir, outputDir);
-
-}
 module.exports = {
   generatePDF,
-  convertJP2
 }

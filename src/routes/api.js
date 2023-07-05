@@ -25,9 +25,8 @@ const apiRoutes = (app) => {
   routes.post("/queryFetchStudentOnDatabaseOnMKH", toolAutoController.queryFetchStudentOnDatabaseOnMKH);
   routes.post("/queryFetchStudentOnDatabaseOnMHV", toolAutoController.queryFetchStudentOnDatabaseOnMHV);
   routes.post("/indat", toolAutoController.indat);
-
-
-
+  routes.post("/convertJP2", toolAutoController.convertJP2);
+  routes.post("/inMauTheoDoiThietBi", toolAutoController.inMauTheoDoiThietBi);
 
 
   return app.use("/api/v1/", routes);
