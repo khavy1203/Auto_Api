@@ -769,6 +769,57 @@ const getAllPhienHoc = async (mhv) => {
     }
 }
 
+const getAllPhienHocTongCuc = async (mhv) => {
+    let connection;
+    try {
+        // Kết nối tới SQL Server
+        connection = await sql.connect(constant.config);
+        console.log('Connected to SQL Server');
+
+        // Tạo một request để thực hiện truy vấn
+        const request = new sql.Request();
+        let optionQuery = `MaDK = '${mhv}'`;
+
+        // Truy vấn dữ liệu
+        console.log('check option', optionQuery)
+        const result = await request.query(`
+        select 
+        CONCAT(CONCAT(DATEPART(HOUR, ThoiDiemDangNhap), ':', DATEPART(MINUTE, ThoiDiemDangNhap)) ,'-',CONCAT(DATEPART(HOUR, ThoiDiemDangXuat), ':', DATEPART(MINUTE, ThoiDiemDangXuat))) as TimeDaoTao,
+        FORMAT(ThoiDiemDangNhap, 'dd/MM/yyyy') AS DateDaotao,
+        CAST( dbo.GetEcoString(TongThoiGian) AS float)/3600  as TongThoiGian, 
+        dbo.GetEcoString(TongQuangDuong) as TongQuangDuong
+        from HanhTrinhTuEtm where ${optionQuery} AND CenterResponseCode in(1,409)
+			`);
+
+        // Xử lý kết quả truy vấn tại đây
+        // Đóng kết nối
+        if (connection) {
+            try {
+                await connection.close();
+                return ({
+                    EM: "Truy vấn thành công",
+                    EC: 0,
+                    DT: result.recordset,
+                })
+            } catch (err) {
+                return ({
+                    EM: "Truy vấn thất bại",
+                    EC: 1,
+                    DT: [],
+                })
+            }
+        }
+
+    } catch (err) {
+        console.log('check err', err)
+        return ({
+            EM: "Truy vấn thất bại",
+            EC: -1,
+            DT: [],
+        })
+    }
+}
+
 const inMauTheoDoiThietBi = async(name,data) => {
     try {
         return await new Promise(async (rs, rj) => {
@@ -1089,5 +1140,6 @@ const getSession = async(mhv) =>{
 module.exports = {
     generatePDF,
     getAllPhienHoc,
-    inMauTheoDoiThietBi
+    inMauTheoDoiThietBi,
+    getAllPhienHocTongCuc
 }

@@ -366,25 +366,26 @@ const botTelegram = (app) => {
             return;
           }
 
+          let i = 1;
           if (res.EC == 0 && res.DT?.length > 0) {
-            const res1 = await toolAutoServices.getAllPhienHoc(result.trim())
-            let i = 1;
-            const convertObjectToArray = (obj, index) => {
-              const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
-              const minutes = Math.round((obj.TongThoiGian - hours) * 60); // Lấy phần thập phân, chuyển đổi thành phút
-              return [
-                index + 1, // Số tự tự
-                obj.TimeDaoTao,
-                obj.DateDaotao,
-                `${hours}h${minutes}`, // Chuyển đổi TongThoiGian thành phút
-                `${parseFloat(obj.TongQuangDuong).toFixed(2)} km `// Giữ nguyên giá trị TongQuangDuong
-              ];
-            };
-            const tableData = res1?.DT?.map((obj, index) => convertObjectToArray(obj, index));
             for (const e of res.DT) {
               const {
-                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, MaKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
               } = e;
+              const res1 = await toolAutoServices.getAllPhienHoc(MaDK)
+              const convertObjectToArray = (obj, index) => {
+                const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
+                const minutes = Math.round((obj.TongThoiGian - hours) * 60); // Lấy phần thập phân, chuyển đổi thành phút
+                return [
+                  index + 1, // Số tự tự
+                  obj.TimeDaoTao,
+                  obj.DateDaotao,
+                  `${hours}h${minutes}`, // Chuyển đổi TongThoiGian thành phút
+                  `${parseFloat(obj.TongQuangDuong).toFixed(2)} km `// Giữ nguyên giá trị TongQuangDuong
+                ];
+              };
+              const tableData = res1?.DT?.map((obj, index) => convertObjectToArray(obj, index));
+
               const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
               const moreDistance = await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
               const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao, TongThoiGianBanDem);
@@ -392,9 +393,27 @@ const botTelegram = (app) => {
               const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
               const print = await toolAutoServices.generatePDF(MaDK, i++, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
 
-              const pr1 = await ctx.replyWithHTML(textNoti);
-              const pr2 = await sleep();
-              await Promise.all([pr1, pr2]);
+              if (print) {
+                const pdfFilePath = print;
+                const pdfBuffer = fs.readFileSync(pdfFilePath);;
+                if (fs.existsSync(pdfFilePath)) {
+                  console.log("file tồn tại")
+                  const pr2 = await ctx.replyWithDocument({ source: pdfBuffer, filename: HoTen + '_' + TenKhoaHoc + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+                  fs.unlink(pdfFilePath, (err) => {
+                    if (err) {
+                      console.error(err);
+                      return;
+                    }
+                    console.log('File deleted successfully');
+                  });
+                  const pr3 = await sleep();
+                  await Promise.all([pr2, pr3]);
+                } else {
+                  console.log("file KHông tồn tại")
+                  ctx.reply("File không tồn tại");
+                }
+              }
+
             };
             isFetchingData = true;
             return;
