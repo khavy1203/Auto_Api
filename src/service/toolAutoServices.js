@@ -783,12 +783,25 @@ const getAllPhienHocTongCuc = async (mhv) => {
         // Truy vấn dữ liệu
         console.log('check option', optionQuery)
         const result = await request.query(`
-        select 
-        CONCAT(CONCAT(DATEPART(HOUR, ThoiDiemDangNhap), ':', DATEPART(MINUTE, ThoiDiemDangNhap)) ,'-',CONCAT(DATEPART(HOUR, ThoiDiemDangXuat), ':', DATEPART(MINUTE, ThoiDiemDangXuat))) as TimeDaoTao,
+        SELECT 
+        CONCAT(
+            CONCAT(
+                RIGHT('0' + CONVERT(VARCHAR, DATEPART(HOUR, ThoiDiemDangNhap)), 2),
+                ':',
+                RIGHT('0' + CONVERT(VARCHAR, DATEPART(MINUTE, ThoiDiemDangNhap)), 2)
+            ),
+            '-',
+            CONCAT(
+                RIGHT('0' + CONVERT(VARCHAR, DATEPART(HOUR, ThoiDiemDangXuat)), 2),
+                ':',
+                RIGHT('0' + CONVERT(VARCHAR, DATEPART(MINUTE, ThoiDiemDangXuat)), 2)
+            )
+        ) AS TimeDaoTao,
         FORMAT(ThoiDiemDangNhap, 'dd/MM/yyyy') AS DateDaotao,
-        CAST( dbo.GetEcoString(TongThoiGian) AS float)/3600  as TongThoiGian, 
-        dbo.GetEcoString(TongQuangDuong) as TongQuangDuong
-        from HanhTrinhTuEtm where ${optionQuery} AND CenterResponseCode in(1,409)
+        CAST(dbo.GetEcoString(TongThoiGian) AS FLOAT) / 3600 AS TongThoiGian,
+        dbo.GetEcoString(TongQuangDuong) AS TongQuangDuong
+        FROM HanhTrinhTuEtm
+        WHERE ${optionQuery} AND CenterResponseCode IN (1, 409)
 			`);
 
         // Xử lý kết quả truy vấn tại đây
@@ -820,7 +833,7 @@ const getAllPhienHocTongCuc = async (mhv) => {
     }
 }
 
-const inMauTheoDoiThietBi = async(name,data) => {
+const inMauTheoDoiThietBi = async (name, data) => {
     try {
         return await new Promise(async (rs, rj) => {
             // Tạo tài liệu PDF mới
@@ -1134,8 +1147,8 @@ const inMauTheoDoiThietBi = async(name,data) => {
 }
 
 
-const getSession = async(mhv) =>{
-    
+const getSession = async (mhv) => {
+
 }
 module.exports = {
     generatePDF,
