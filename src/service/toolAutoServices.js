@@ -1082,6 +1082,10 @@ const inMauTheoDoiThietBi = async(name,data) => {
     }
 }
 
+
+const getSession = async(mhv) =>{
+    
+}
 module.exports = {
     generatePDF,
     getAllPhienHoc,

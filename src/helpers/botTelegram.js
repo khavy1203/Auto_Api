@@ -3,8 +3,9 @@ import { checkTokenTelegram, getTokenTelegram, checkTokenInLocalNLTB, getTokenIn
 import nltbLocalService from '../service/nltbLocalService.js';
 const moment = require('moment');
 import constant from '../constant/constant.js';
-import nltbLocalController from "../controller/nltbLocalController.js"
-import botTelegramController from "../controller/botTelegramController.js"
+import nltbLocalController from "../controller/nltbLocalController.js";
+import botTelegramController from "../controller/botTelegramController.js";
+import toolAutoServices from "../service/toolAutoServices.js";
 
 const cron = require('node-cron');
 const sql = require('mssql');
@@ -354,36 +355,59 @@ const botTelegram = (app) => {
             isFetchingData = true;
             return;
           }
-          const res = await nltbLocalService.dowloadFilePDFFromNLTBLocal(input.join(" "));
-          if (res?.EC == 0) {
-            const pdfFilePath = res.DT;
-            const pdfBuffer = fs.readFileSync(pdfFilePath);;
-            if (fs.existsSync(pdfFilePath)) {
-              console.log("file tồn tại")
-              await ctx.replyWithDocument({ source: pdfBuffer, filename: input.join("_") + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
-              fs.unlink(pdfFilePath, (err) => {
-                if (err) {
-                  console.error(err);
-                  return;
-                }
-                console.log('File deleted successfully');
-              });
 
-              isFetchingData = true;
-              return;
-            } else {
-              console.log("file KHông tồn tại")
-              ctx.reply("File không tồn tại");
-              isFetchingData = true;
-              return;
-            }
+          const res = await botTelegramService.getInfoStudent(name.trim());
+
+          Promise.all([res]);
+          console.log('check data', res);
+          if (+res?.EC != 0) {
+            await ctx.reply('Truy vấn thất bại');
+            isFetchingData = true;
+            return;
+          }
+
+          if (res.EC == 0 && res.DT?.length > 0) {
+            const res1 = await toolAutoServices.getAllPhienHoc(result.trim())
+            let i = 1;
+            const convertObjectToArray = (obj, index) => {
+              const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
+              const minutes = Math.round((obj.TongThoiGian - hours) * 60); // Lấy phần thập phân, chuyển đổi thành phút
+              return [
+                index + 1, // Số tự tự
+                obj.TimeDaoTao,
+                obj.DateDaotao,
+                `${hours}h${minutes}`, // Chuyển đổi TongThoiGian thành phút
+                `${parseFloat(obj.TongQuangDuong).toFixed(2)} km `// Giữ nguyên giá trị TongQuangDuong
+              ];
+            };
+            const tableData = res1?.DT?.map((obj, index) => convertObjectToArray(obj, index));
+            for (const e of res.DT) {
+              const {
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
+              } = e;
+              const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
+              const moreDistance = await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
+              const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao, TongThoiGianBanDem);
+              const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao, TongThoiGianChayXeTuDong)
+              const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
+              const print = await toolAutoServices.generatePDF(MaDK, i++, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
+
+              const pr1 = await ctx.replyWithHTML(textNoti);
+              const pr2 = await sleep();
+              await Promise.all([pr1, pr2]);
+            };
+            isFetchingData = true;
+            return;
           } else {
-            await ctx.replyWithHTML(res?.EM);
+            await ctx.reply("Dữ liệu trống !!!");
             isFetchingData = true;
             return;
           }
         }
+        isFetchingData = true;
+        return;
       } catch (e) {
+        console.log('check err', e)
         await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;
@@ -1056,8 +1080,8 @@ const botTelegram = (app) => {
 
     })
 
-     //testform 
-     bot.command('helpAdmin', async (ctx) => {
+    //testform 
+    bot.command('helpAdmin', async (ctx) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
