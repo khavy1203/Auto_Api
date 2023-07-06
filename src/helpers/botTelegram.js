@@ -372,7 +372,9 @@ const botTelegram = (app) => {
               const {
                 MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, MaKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
               } = e;
-              const res1 = await toolAutoServices.getAllPhienHoc(MaDK)
+              const ngaysinhFm = moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')
+							console.log("check makhoa hoc", MaKhoaHoc)
+              const res1 = await toolAutoServices.getAllPhienHocTongCuc(MaDK)
               const convertObjectToArray = (obj, index) => {
                 const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
                 const minutes = Math.round((obj.TongThoiGian - hours) * 60); // Lấy phần thập phân, chuyển đổi thành phút
@@ -391,7 +393,7 @@ const botTelegram = (app) => {
               const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao, TongThoiGianBanDem);
               const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao, TongThoiGianChayXeTuDong)
               const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
-              const print = await toolAutoServices.generatePDF(MaDK, i++, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
+              const print = await toolAutoServices.generatePDF(MaDK, i++, HoTen, ngaysinhFm, MaKhoaHoc, HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
 
               if (print) {
                 const pdfFilePath = print;
@@ -465,7 +467,7 @@ const botTelegram = (app) => {
               const {
                 MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, MaKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
               } = e;
-              const res1 = await toolAutoServices.getAllPhienHoc(MaDK)
+              const res1 = await toolAutoServices.getAllPhienHocTongCuc(MaDK)
               const convertObjectToArray = (obj, index) => {
                 const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
                 const minutes = Math.round((obj.TongThoiGian - hours) * 60); // Lấy phần thập phân, chuyển đổi thành phút

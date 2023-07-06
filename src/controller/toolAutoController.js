@@ -234,16 +234,18 @@ const indat = async (req, res) => {
 					console.log("check tableData", tableData)
 
 					if (res.EC == 0 && res.DT?.length > 0 && res1.EC == 0 && res1.DT?.length > 0) {
+						const outputFormat = 'DD/MM/YYYY HH[h]mm[p]';
 						for (const e of res.DT) {
 							const {
 								MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, MaKhoaHoc, IsSend, TenKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
 							} = e;
+							const ngaysinhFm = moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')
 							const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
 							const moreDistance = await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
 							const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao, TongThoiGianBanDem);
 							const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao, TongThoiGianChayXeTuDong)
 							const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
-							const print = await toolAutoServices.generatePDF(MaDK, e[1] ? e[1] : count, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
+							const print = await toolAutoServices.generatePDF(MaDK, e[1] ? e[1] : count, HoTen,ngaysinhFm, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
 							const printCommand = `"C:\\Users\\KHA VY\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe" -print-to-default -print-settings "duplex,long-edge" "${print}"`
 							if (print) {
 								// const printPromise = new Promise((rs, rj) => {
@@ -495,6 +497,8 @@ const inMauTheoDoiThietBi = async (req, res) => {
 		});
 	}
 }
+
+
 
 module.exports = {
 	generateImageBaoCao1,
