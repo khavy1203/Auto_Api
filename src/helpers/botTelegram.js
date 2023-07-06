@@ -448,24 +448,65 @@ const botTelegram = (app) => {
             isFetchingData = true;
             return;
           }
-          //call api get student info
-          let tokenNLTB = ctx?.state?.tokenNLTB;
-          const res = await botTelegramService.getSessionStudent(tokenNLTB, name);
+
+          const res = await botTelegramService.getInfoStudent(name.trim());
+
           Promise.all([res]);
-          console.log('check data PHIEN', res);
-          let i = 1;
+          console.log('check data', res);
           if (+res?.EC != 0) {
-            await ctx.reply('Lỗi lấy token, vui lòng thử lại sau');
+            await ctx.reply('Truy vấn thất bại');
             isFetchingData = true;
             return;
           }
-          if (res.EC == 0 && res.DT.length > 0) {
+
+          let i = 1;
+          if (res.EC == 0 && res.DT?.length > 0) {
             for (const e of res.DT) {
-              const row = `<i>STT Phiên:</i><code style="color: red;"> <b style="color:red;">${i++}</b></code>\n<i>Họ và Tên:</i> <b>${e?.studentName}</b>\n<i>Mã học viên:</i> <b>${e?.studentId}</b>\n<i>Thời gian bắt đầu:</i> <b>${e?.startTime ? e?.startTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian kết thúc:</i>  <b>${e?.endTime ? e?.endTime.toString().slice(0, 16) + "Z" : ""}</b>\n<i>Thời gian:</i>  <b>${e?.totalTime ? e?.totalTime + " giờ" : ""}</b>\n<i>Quãng đường:</i>  <b>${e?.totalDistance ? e?.totalDistance + " Km" : ""}</b>`;
-              const pr1 = await ctx.replyWithHTML(row);
-              const pr2 = await sleep();
-              console.log('check i++', i);
-              await Promise.all([pr1, pr2]);
+              const {
+                MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, MaKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
+              } = e;
+              const res1 = await toolAutoServices.getAllPhienHoc(MaDK)
+              const convertObjectToArray = (obj, index) => {
+                const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
+                const minutes = Math.round((obj.TongThoiGian - hours) * 60); // Lấy phần thập phân, chuyển đổi thành phút
+                return [
+                  index + 1, // Số tự tự
+                  obj.TimeDaoTao,
+                  obj.DateDaotao,
+                  `${hours}h${minutes}`, // Chuyển đổi TongThoiGian thành phút
+                  `${parseFloat(obj.TongQuangDuong).toFixed(2)} km `// Giữ nguyên giá trị TongQuangDuong
+                ];
+              };
+              const tableData = res1?.DT?.map((obj, index) => convertObjectToArray(obj, index));
+
+              const moreTime = await nltbLocalController.checkTime(HangDaoTao, TongThoiGian);
+              const moreDistance = await nltbLocalController.checkDistance(HangDaoTao, TongQuangDuong);
+              const moreTimeNight = await nltbLocalController.checkTimeNight(HangDaoTao, TongThoiGianBanDem);
+              const moreRunOnAutoCar = await nltbLocalController.checkRunOnAutoCar(HangDaoTao, TongThoiGianChayXeTuDong)
+              const moreTimePass10h = await nltbLocalController.checkHourPass10h(TongThoiGianTrong24h)
+              const print = await toolAutoServices.generatePDF(MaDK, i++, HoTen, NgaySinh, MaKhoaHoc[0], HangDaoTao, tableData, TongThoiGian, TongQuangDuong, moreTime != null || moreDistance != null ? "Không Đạt" : "Đạt")
+
+              if (print) {
+                const pdfFilePath = print;
+                const pdfBuffer = fs.readFileSync(pdfFilePath);;
+                if (fs.existsSync(pdfFilePath)) {
+                  console.log("file tồn tại")
+                  const pr2 = await ctx.replyWithDocument({ source: pdfBuffer, filename: HoTen + '_' + TenKhoaHoc + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
+                  fs.unlink(pdfFilePath, (err) => {
+                    if (err) {
+                      console.error(err);
+                      return;
+                    }
+                    console.log('File deleted successfully');
+                  });
+                  const pr3 = await sleep();
+                  await Promise.all([pr2, pr3]);
+                } else {
+                  console.log("file KHông tồn tại")
+                  ctx.reply("File không tồn tại");
+                }
+              }
+
             };
             isFetchingData = true;
             return;
@@ -478,12 +519,13 @@ const botTelegram = (app) => {
         isFetchingData = true;
         return;
       } catch (e) {
+        console.log('check err', e)
         await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;
       }
-    })
 
+    })
 
     bot.command('matphien', async (ctx) => {
       try {
