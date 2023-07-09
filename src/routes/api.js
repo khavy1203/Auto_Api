@@ -28,6 +28,9 @@ const apiRoutes = (app) => {
   routes.post("/convertJP2", toolAutoController.convertJP2);
   routes.post("/inMauTheoDoiThietBi", toolAutoController.inMauTheoDoiThietBi);
 
+  routes.get("/generateCaptcha", toolAutoController.generateCaptcha);
+
+
 
   return app.use("/api/v1/", routes);
 }

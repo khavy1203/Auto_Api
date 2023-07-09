@@ -373,7 +373,7 @@ const botTelegram = (app) => {
                 MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, MaKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
               } = e;
               const ngaysinhFm = moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')
-							console.log("check makhoa hoc", MaKhoaHoc)
+              console.log("check makhoa hoc", MaKhoaHoc)
               const res1 = await toolAutoServices.getAllPhienHocTongCuc(MaDK)
               const convertObjectToArray = (obj, index) => {
                 const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
@@ -468,7 +468,7 @@ const botTelegram = (app) => {
                 MaDK, HoTen, NgaySinh, SoCMT, HangDaoTao, IsSend, TenKhoaHoc, MaKhoaHoc, TongQuangDuong, TongThoiGian, TongThoiGianBanDem, TongThoiGianChayXeTuDong, TongThoiGianTrong24h, ThoiDiemReset
               } = e;
               const ngaysinhFm = moment(NgaySinh).utcOffset('+0000').format('DD/MM/YYYY')
-							console.log("check makhoa hoc", MaKhoaHoc)
+              console.log("check makhoa hoc", MaKhoaHoc)
               const res1 = await toolAutoServices.getAllPhienHocTongCuc(MaDK)
               const convertObjectToArray = (obj, index) => {
                 const hours = Math.floor(obj.TongThoiGian); // Lấy phần nguyên (giờ)
@@ -1085,120 +1085,79 @@ const botTelegram = (app) => {
     })
 
     //testform 
-    bot.command('testform', async (ctx) => {
+    bot.command('test', async (ctx) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
-          console.log("DAT detected", ctx);
-          let input = ctx.message.text.split(" ");
-          input.shift();
-          const name = input.join(" ");
-          console.log("name", name);
-          if (!name) {
-            await ctx.reply(helpMessage);
-            isFetchingData = true;
-            return;
-          }
-          //call api get student info
-          // let tokenNLTB = ctx?.state?.tokenNLTB;
-          // const mhv = await nltbLocalService.getMHVforCCCD(tokenNLTB, input.join(" "))
-          // if (!mhv?.DT) {
-          //   await ctx.reply('Không tồn tại tên học này hoặc CMND của học viên \"' + input.join(" ") + '\" này !!! Vui lòng lấy 6 số cuối của MSHV hoặc CMND cho chuẩn ạ ');
-          //   isFetchingData = true;
-          //   return;
-          // }
-          const res = await botTelegramController.generatePDF("123");
-          if (res?.EC == 0) {
-            // const pdfFilePath = res.DT;
-            // const pdfBuffer = fs.readFileSync(pdfFilePath);;
-            // if (fs.existsSync(pdfFilePath)) {
-            //   console.log("file tồn tại")
-            //   await ctx.replyWithDocument({ source: pdfBuffer, filename: input.join("_") + '.pdf' }, { chat_id: ctx.chat.id }); // Gửi nội dung PDF lên group
-            //   fs.unlink(pdfFilePath, (err) => {
-            //     if (err) {
-            //       console.error(err);
-            //       return;
-            //     }
-            //     console.log('File deleted successfully');
-            //   });
-
-            //   isFetchingData = true;
-            //   return;
-            // } else {
-            //   console.log("file KHông tồn tại")
-            //   ctx.reply("File không tồn tại");
-            //   isFetchingData = true;
-            //   return;
-            // }
-            console.log('file tạo thành công')
-          } else {
-            await ctx.replyWithHTML(res?.EM);
-            isFetchingData = true;
-            return;
-          }
-        }
-      } catch (e) {
-        console.log("check e", e)
-        await ctx.reply("Vui lòng thử lại sau !!!");
-        isFetchingData = true;
-        return;
-      }
-
-    })
-
-    //testform 
-    bot.command('helpAdmin', async (ctx) => {
-      try {
-        if (isFetchingData) {
-          isFetchingData = false;
-          await ctx.replyWithHTML(helpAdmin);
+          await toolAutoServices.generateCaptcha();
+        } else {
+          await ctx.replyWithHTML(res?.EM);
           isFetchingData = true;
           return;
-
         }
+      
       } catch (e) {
-        console.log("check e", e)
-        await ctx.reply("Vui lòng thử lại sau !!!");
+      console.log("check e", e)
+      await ctx.reply("Vui lòng thử lại sau !!!");
+      isFetchingData = true;
+      return;
+    }
+
+  })
+
+  //testform 
+  bot.command('helpAdmin', async (ctx) => {
+    try {
+      if (isFetchingData) {
+        isFetchingData = false;
+        await ctx.replyWithHTML(helpAdmin);
         isFetchingData = true;
         return;
+
       }
+    } catch (e) {
+      console.log("check e", e)
+      await ctx.reply("Vui lòng thử lại sau !!!");
+      isFetchingData = true;
+      return;
+    }
 
+  })
+
+  bot.hears("phiên", (ctx) => {
+    // Send response message
+    if (isFetchingData) {
+      isFetchingData = false;
+      ctx.reply(helpMessage)
+      isFetchingData = true;
+    }
+  })
+  bot.hears("/phiên", (ctx) => {
+    // Send response message
+    if (isFetchingData) {
+      isFetchingData = false;
+      ctx.reply(helpMessage)
+      isFetchingData = true;
+    }
+  })
+
+} catch (e) {
+  // Gửi một tin nhắn
+  bot.telegram.sendMessage(process.env.id_groupNLTB, 'Lỗi nghiêm trọng, vui lòng đợi trong giây lát')
+    .then(() => {
+      console.log('Đã gửi tin nhắn thành công');
     })
+    .catch((error) => {
+      console.log('Lỗi khi gửi tin nhắn:', error);
+    });
+  isFetchingData = true;
+}
 
-    bot.hears("phiên", (ctx) => {
-      // Send response message
-      if (isFetchingData) {
-        isFetchingData = false;
-        ctx.reply(helpMessage)
-        isFetchingData = true;
-      }
-    })
-    bot.hears("/phiên", (ctx) => {
-      // Send response message
-      if (isFetchingData) {
-        isFetchingData = false;
-        ctx.reply(helpMessage)
-        isFetchingData = true;
-      }
-    })
+bot.launch();
 
-  } catch (e) {
-    // Gửi một tin nhắn
-    bot.telegram.sendMessage(process.env.id_groupNLTB, 'Lỗi nghiêm trọng, vui lòng đợi trong giây lát')
-      .then(() => {
-        console.log('Đã gửi tin nhắn thành công');
-      })
-      .catch((error) => {
-        console.log('Lỗi khi gửi tin nhắn:', error);
-      });
-    isFetchingData = true;
-  }
-
-  bot.launch();
-
-  // Enable graceful stop
-  process.once('SIGINT', () => bot.stop('SIGINT'));
-  process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
 }
 export default botTelegram;
 

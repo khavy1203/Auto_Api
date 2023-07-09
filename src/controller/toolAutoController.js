@@ -498,6 +498,24 @@ const inMauTheoDoiThietBi = async (req, res) => {
 	}
 }
 
+const generateCaptcha = async (req, res) => {
+
+	try {
+		const testcp = await toolAutoServices.generateCaptcha();
+		return res.status(200).json({
+			EM: "Lấy hình ảnh thành công", //error message
+			EC: 0, //error code
+			DT: "",
+		});
+	} catch (e) {
+		console.log("check e", e)
+		return res.status(500).json({
+			EM: "error from sever", //error message
+			EC: "-1", //error code
+			DT: "",
+		});
+	}
+}
 
 
 module.exports = {
@@ -506,5 +524,6 @@ module.exports = {
 	queryFetchStudentOnDatabaseOnMHV,
 	indat,
 	convertJP2,
-	inMauTheoDoiThietBi
+	inMauTheoDoiThietBi,
+	generateCaptcha
 }

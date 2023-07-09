@@ -845,7 +845,6 @@ const pushSource = async (tokenLocalNLTB = null, khoa, bienso) => {
 							const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 							console.log('check data', data)
 							console.log('check data.length', data.length)
-							data.shift();
 							await data.map(async (e) => {
 								console.log('check e in data', e)
 								if (e.length > 0) {
