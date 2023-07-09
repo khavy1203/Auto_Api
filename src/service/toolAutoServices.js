@@ -10,7 +10,6 @@ const sql = require('mssql');
 const Tesseract = require('tesseract.js');
 const sharp = require('sharp');
 const Jimp = require('jimp');
-import { OCRAD } from 'ocrad.js';
 
 const generatePDF = async (MaDK, countStd, name, birthday, course, rank, tableData, totalTime, totalDistance, KQ) => {
     try {
@@ -1167,190 +1166,28 @@ async function decodeCaptcha(imagePath) {
         return null;
     }
 }
-
-// Hàm tách ký tự và vẽ khuôn viền
-async function extractCharacters(image) {
-    const grayImage = image.clone().greyscale();
-
-    const thresholdValue = 128; // Giá trị ngưỡng threshold
-
-    grayImage.scan(0, 0, grayImage.bitmap.width, grayImage.bitmap.height, function (x, y, idx) {
-        const red = this.bitmap.data[idx];
-        const green = this.bitmap.data[idx + 1];
-        const blue = this.bitmap.data[idx + 2];
-
-        const average = (red + green + blue) / 3;
-        const thresholdedValue = average > thresholdValue ? 255 : 0;
-
-        this.bitmap.data[idx] = thresholdedValue;   // Đỏ
-        this.bitmap.data[idx + 1] = thresholdedValue; // Xanh lá cây
-        this.bitmap.data[idx + 2] = thresholdedValue; // Xanh dương
-    });
-
-    const boundingBoxes = findBoundingBoxes(grayImage);
-
-    const characters = [];
-    for (const box of boundingBoxes) {
-        const { x, y, width, height } = box;
-        const characterImage = image.clone().crop(x, y, width, height);
-        characters.push(characterImage);
-    }
-
-    return {
-        characters,
-        boundingBoxes,
-    };
-}
-
-// Hàm tìm khuôn viền của các ký tự
-function findBoundingBoxes(image) {
-    const width = image.bitmap.width;
-    const height = image.bitmap.height;
-
-    const boundingBoxes = [];
-    const visited = new Array(width * height).fill(false);
-
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const pixelIndex = y * width + x;
-
-            if (!visited[pixelIndex] && image.getPixelColor(x, y) === 0) {
-                const boundingBox = floodFill(image, x, y);
-                boundingBoxes.push(boundingBox);
-            }
-        }
-    }
-
-    return boundingBoxes;
-}
-
-// Hàm flood fill để xác định khuôn viền
-function floodFill(image, startX, startY) {
-    const width = image.bitmap.width;
-    const height = image.bitmap.height;
-  
-    const stack = [{ x: startX, y: startY }];
-    const visited = new Array(width * height).fill(false);
-  
-    let minX = width;
-    let minY = height;
-    let maxX = 0;
-    let maxY = 0;
-  
-    while (stack.length > 0) {
-      const { x, y } = stack.pop();
-      const pixelIndex = y * width + x;
-  
-      if (x >= 0 && x < width && y >= 0 && y < height && !visited[pixelIndex] && image.getPixelColor(x, y) === 0) {
-        visited[pixelIndex] = true;
-  
-        if (x < minX) minX = x;
-        if (y < minY) minY = y;
-        if (x > maxX) maxX = x;
-        if (y > maxY) maxY = y;
-  
-        stack.push({ x: x - 1, y });
-        stack.push({ x: x + 1, y });
-        stack.push({ x, y: y - 1 });
-        stack.push({ x, y: y + 1 });
-      }
-    }
-  
-    const width = maxX - minX + 1;
-    const height = maxY - minY + 1;
-  
-    return { x: minX, y: minY, width, height };
-  }
-  
-// Hàm áp dụng phân đoạn để phân biệt chữ và số
-function segmentCharacters(characters) {
-    // TODO: Thực hiện phân đoạn để phân biệt chữ và số
-    // ...
-
-    return characters;
-}
-
-// Hàm tăng độ dày của khuôn viền cho chữ và số
-function thickenBoundingBoxes(boundingBoxes) {
-    const thickenedBoxes = boundingBoxes.map((box) => {
-        const { x, y, width, height } = box;
-        const padding = 2; // Độ dày viền
-        const thickenedX = x - padding;
-        const thickenedY = y - padding;
-        const thickenedWidth = width + padding * 2;
-        const thickenedHeight = height + padding * 2;
-
-        return {
-            x: thickenedX,
-            y: thickenedY,
-            width: thickenedWidth,
-            height: thickenedHeight,
-        };
-    });
-
-    return thickenedBoxes;
-}
-
-// Hàm loại bỏ ký tự gây nhiễu
-function removeNoise(characters) {
-    // TODO: Thực hiện loại bỏ ký tự gây nhiễu
-    // ...
-
-    return characters;
-}
-
-// Hàm tạo hình ảnh đã làm nổi bật
-function createHighlightedImage(image, boundingBoxes, characters) {
-    const highlightedImage = image.clone();
-
-    for (let i = 0; i < boundingBoxes.length; i++) {
-        const box = boundingBoxes[i];
-        const { x, y, width, height } = box;
-
-        // Vẽ khuôn viền
-        highlightedImage.scan(x, y, width, 1, function (x, y) {
-            this.setPixelColor(Jimp.cssColorToHex('#000000'), x, y);
-        });
-        highlightedImage.scan(x, y + height - 1, width, 1, function (x, y) {
-            this.setPixelColor(Jimp.cssColorToHex('#000000'), x, y);
-        });
-        highlightedImage.scan(x, y, 1, height, function (x, y) {
-            this.setPixelColor(Jimp.cssColorToHex('#000000'), x, y);
-        });
-        highlightedImage.scan(x + width - 1, y, 1, height, function (x, y) {
-            this.setPixelColor(Jimp.cssColorToHex('#000000'), x, y);
-        });
-
-        // Vẽ ký tự
-        const character = characters[i];
-        highlightedImage.composite(character, x, y);
-    }
-
-    return highlightedImage;
-}
-
 const generateCaptcha = async () => {
-    // Sử dụng hàm để đọc captcha từ hình ảnh
-    const imagePath = 'C:/Users/KHA VY/Desktop/Auto_api/src/img/captcha/Screenshot1.png';
-    // Đọc hình ảnh
-    const image = await Jimp.read(imagePath);
-    // Tách ký tự và vẽ khuôn viền
-    const { characters, boundingBoxes } = await extractCharacters(image);
-    // Áp dụng phân đoạn để phân biệt chữ và số
-    const segmentedCharacters = segmentCharacters(characters);
+    // // Sử dụng hàm để đọc captcha từ hình ảnh
+    // const imagePath = 'C:/Users/KHA VY/Desktop/Auto_api/src/img/captcha/Screenshot1.png';
+    // // Đọc hình ảnh
+    // const image = await Jimp.read(imagePath);
+    // // Tách ký tự và vẽ khuôn viền
+    // const { characters, boundingBoxes } = await extractCharacters(image);
+    // // Áp dụng phân đoạn để phân biệt chữ và số
+    // const segmentedCharacters = segmentCharacters(characters);
 
-    // Tăng độ dày của khuôn viền cho chữ và số
-    const thickenedBoxes = thickenBoundingBoxes(boundingBoxes);
+    // // Tăng độ dày của khuôn viền cho chữ và số
+    // const thickenedBoxes = thickenBoundingBoxes(boundingBoxes);
 
-    // Loại bỏ ký tự gây nhiễu
-    const cleanedCharacters = removeNoise(segmentedCharacters);
+    // // Loại bỏ ký tự gây nhiễu
+    // const cleanedCharacters = removeNoise(segmentedCharacters);
 
-    // Xuất hình ảnh đã làm nổi bật
-    const highlightedImage = createHighlightedImage(image, thickenedBoxes, cleanedCharacters);
+    // // Xuất hình ảnh đã làm nổi bật
+    // const highlightedImage = createHighlightedImage(image, thickenedBoxes, cleanedCharacters);
 
-    await image.writeAsync('processed_image.jpg');
-    const captchaText = await decodeCaptcha('processed_image.jpg')
-    console.log('Nội dung captcha:', captchaText);
+    // await image.writeAsync('processed_image.jpg');
+    // const captchaText = await decodeCaptcha('processed_image.jpg')
+    // console.log('Nội dung captcha:', captchaText);
 }
 
 
