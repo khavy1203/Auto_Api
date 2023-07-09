@@ -8,7 +8,6 @@ const fontkit = require('@pdf-lib/fontkit');
 const { exec } = require('child_process');
 const sql = require('mssql');
 const Tesseract = require('tesseract.js');
-const sharp = require('sharp');
 const Jimp = require('jimp');
 
 const generatePDF = async (MaDK, countStd, name, birthday, course, rank, tableData, totalTime, totalDistance, KQ) => {
@@ -705,6 +704,7 @@ const generatePDF = async (MaDK, countStd, name, birthday, course, rank, tableDa
 
             // Lưu file PDF
             const pdfBytes = await pdfDoc.save();
+            const pathWrite = path.join(__dirname, '..', 'filesPDF', 'inDat', `${MaDK}.pdf`);
 
             await fs.writeFileSync(pathWrite, pdfBytes);
             if (fs.existsSync(pathWrite)) {

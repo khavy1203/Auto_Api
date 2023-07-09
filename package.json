@@ -28,19 +28,18 @@
     "http-proxy": "^1.18.1",
     "https": "^1.0.0",
     "install": "^0.13.0",
-    "jimp": "^0.3.11",
+    "jimp": "^0.3.5",
     "mkdirp": "^3.0.1",
     "moment": "^2.29.4",
     "mssql": "^9.1.1",
     "net": "^1.0.2",
     "node-cron": "^3.0.2",
     "node-fetch": "^3.3.1",
-    "nodemon": "^2.0.22",
+    "nodemon": "^3.0.0",
     "npm": "^9.7.2",
     "path": "^0.12.7",
     "pdf-lib": "^1.10.0",
     "pdfkit": "^0.13.0",
-    "sharp": "^0.32.1",
     "socket.io": "^4.6.2",
     "telegraf": "^4.12.2",
     "tesseract.js": "^4.1.1",
@@ -49,9 +48,9 @@
     "xml2js": "^0.6.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.21.0",
+    "@babel/cli": "^7.6.4",
     "@babel/core": "^7.21.8",
-    "@babel/node": "^7.20.7",
+    "@babel/node": "^7.2.2",
     "@babel/preset-env": "^7.21.4"
   }
 }
