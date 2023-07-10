@@ -971,12 +971,13 @@ const botTelegram = (app) => {
         if (isFetchingData) {
           isFetchingData = false;
           console.log("check ctx.chat.id ", ctx.chat.id )
+          console.log("ctx.update.message.from", ctx.update.message.from);
+          console.log("check ctx ctx.update.message", ctx.update.message )
           if (ctx.chat.id != process.env.id_admin) {
             await ctx.reply("Dữ liệu này chỉ xem thông tin phiên đã về máy chủ chưa? Chứ không phải là phiên đã lên tổng cục. Hãy liên hệ Admin để truy cập kiểm tra.");
             isFetchingData = true;
             return;
           }
-          console.log("ctx.update.message.from", ctx.update.message.from);
           let input = ctx.message.text.split(" ");
           input.shift();
           const name = input.join(" ");
