@@ -970,6 +970,11 @@ const botTelegram = (app) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
+          if (ctx.chat.id != process.env.id_admin) {
+            await ctx.reply("Dữ liệu này chỉ xem thông tin phiên đã về máy chủ chưa? Chứ không phải là phiên đã lên tổng cục. Hãy liên hệ Admin để truy cập kiểm tra.");
+            isFetchingData = true;
+            return;
+          }
           console.log("DAT detected", ctx);
           let input = ctx.message.text.split(" ");
           input.shift();
@@ -1029,6 +1034,11 @@ const botTelegram = (app) => {
       try {
         if (isFetchingData) {
           isFetchingData = false;
+          if (ctx.chat.id != process.env.id_admin) {
+            await ctx.reply("Dữ liệu này chỉ xem thông tin phiên đã về máy chủ chưa? Chứ không phải là phiên đã lên tổng cục. Hãy liên hệ Admin để truy cập kiểm tra.");
+            isFetchingData = true;
+            return;
+          }
           console.log("DAT detected", ctx);
           let input = ctx.message.text.split(" ");
           input.shift();
@@ -1095,69 +1105,69 @@ const botTelegram = (app) => {
           isFetchingData = true;
           return;
         }
-      
+
       } catch (e) {
-      console.log("check e", e)
-      await ctx.reply("Vui lòng thử lại sau !!!");
-      isFetchingData = true;
-      return;
-    }
-
-  })
-
-  //testform 
-  bot.command('helpAdmin', async (ctx) => {
-    try {
-      if (isFetchingData) {
-        isFetchingData = false;
-        await ctx.replyWithHTML(helpAdmin);
+        console.log("check e", e)
+        await ctx.reply("Vui lòng thử lại sau !!!");
         isFetchingData = true;
         return;
-
       }
-    } catch (e) {
-      console.log("check e", e)
-      await ctx.reply("Vui lòng thử lại sau !!!");
-      isFetchingData = true;
-      return;
-    }
 
-  })
-
-  bot.hears("phiên", (ctx) => {
-    // Send response message
-    if (isFetchingData) {
-      isFetchingData = false;
-      ctx.reply(helpMessage)
-      isFetchingData = true;
-    }
-  })
-  bot.hears("/phiên", (ctx) => {
-    // Send response message
-    if (isFetchingData) {
-      isFetchingData = false;
-      ctx.reply(helpMessage)
-      isFetchingData = true;
-    }
-  })
-
-} catch (e) {
-  // Gửi một tin nhắn
-  bot.telegram.sendMessage(process.env.id_groupNLTB, 'Lỗi nghiêm trọng, vui lòng đợi trong giây lát')
-    .then(() => {
-      console.log('Đã gửi tin nhắn thành công');
     })
-    .catch((error) => {
-      console.log('Lỗi khi gửi tin nhắn:', error);
-    });
-  isFetchingData = true;
-}
 
-bot.launch();
+    //testform 
+    bot.command('helpAdmin', async (ctx) => {
+      try {
+        if (isFetchingData) {
+          isFetchingData = false;
+          await ctx.replyWithHTML(helpAdmin);
+          isFetchingData = true;
+          return;
 
-// Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+        }
+      } catch (e) {
+        console.log("check e", e)
+        await ctx.reply("Vui lòng thử lại sau !!!");
+        isFetchingData = true;
+        return;
+      }
+
+    })
+
+    bot.hears("phiên", (ctx) => {
+      // Send response message
+      if (isFetchingData) {
+        isFetchingData = false;
+        ctx.reply(helpMessage)
+        isFetchingData = true;
+      }
+    })
+    bot.hears("/phiên", (ctx) => {
+      // Send response message
+      if (isFetchingData) {
+        isFetchingData = false;
+        ctx.reply(helpMessage)
+        isFetchingData = true;
+      }
+    })
+
+  } catch (e) {
+    // Gửi một tin nhắn
+    bot.telegram.sendMessage(process.env.id_groupNLTB, 'Lỗi nghiêm trọng, vui lòng đợi trong giây lát')
+      .then(() => {
+        console.log('Đã gửi tin nhắn thành công');
+      })
+      .catch((error) => {
+        console.log('Lỗi khi gửi tin nhắn:', error);
+      });
+    isFetchingData = true;
+  }
+
+  bot.launch();
+
+  // Enable graceful stop
+  process.once('SIGINT', () => bot.stop('SIGINT'));
+  process.once('SIGTERM', () => bot.stop('SIGTERM'));
 }
 export default botTelegram;
 
